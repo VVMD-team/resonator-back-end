@@ -1,7 +1,8 @@
 const { ethers } = require("ethers");
 const path = require("path");
 
-const jsonFilePath = require ("../constants/abi.json");
+const jsonFilePath = path.join(__dirname, "/src/constants/abi.json");
+
 const abi = require(jsonFilePath);
 
 const rsnContract = "0xF8a0A167BEa66247425ef9CB9B622a4B320B8bB6";
