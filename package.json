@@ -1,0 +1,41 @@
+{
+  "name": "instructor-backend",
+  "version": "1.0.0",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "ts-node -r tsconfig-paths/register dist/index.js",
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register api/index.ts",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@ngrok/ngrok": "^1.4.1",
+    "@types/multer": "^1.4.12",
+    "bs58": "^6.0.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.4",
+    "express": "^4.19.2",
+    "firebase": "^10.12.4",
+    "firebase-admin": "^12.2.0",
+    "multer": "^1.4.5-lts.1",
+    "node-fetch": "^2.7.0",
+    "tsconfig-paths": "^4.2.0",
+    "tweetnacl": "^1.0.3",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.7.8",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3",
+    "@types/uuid": "^10.0.0"
+  }
+}
