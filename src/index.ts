@@ -3,12 +3,12 @@ import * as ngrok from "@ngrok/ngrok";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-import ngrokConfig from "../src/config/ngrok";
+import ngrokConfig from "./config/ngrok";
 
-import { PORT, whitelist } from "../src/constants";
-import router from "../src/routes";
+import { PORT, whitelist } from "./constants";
+import router from "./routes";
 
-import errorHandler from "../src/utils/errorHandler";
+import errorHandler from "./utils/errorHandler";
 
 const app = express();
 
