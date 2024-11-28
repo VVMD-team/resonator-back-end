@@ -1,7 +1,7 @@
 const { ethers } = require("ethers");
 const path = require("path");
 
-const jsonFilePath = path.join(__dirname, "/src/constants/abi.json");
+const jsonFilePath = path.join(__dirname, "../constants/abi.json");
 
 const abi = require(jsonFilePath);
 
@@ -28,6 +28,6 @@ export const getUnclaimedFees = async (walletAddress: string) => {
   const rsn = +rsnInWallet;
 
   return {
-    rsnAmount: rsn.toFixed(0)
+    rsnAmount: rsn.toFixed(0),
   };
 };
