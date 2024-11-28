@@ -27,11 +27,22 @@ import {
 import { File } from "../custom-types/File";
 import { uploadFileToStorage } from "../firebase-storage/file";
 
+import { calculateTotalSize } from "../firebase-api/user";
+
+import { encryptFileSync } from "helpers/encryptFileSync";
+import { decryptFileSync } from "helpers/decryptFileSync";
+import { fetchFileFromPublicUrl } from "helpers/fetchFileFromPublicUrl";
+
 const FilesController = {
   async uploadFiles(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const files = req.files as Express.Multer.File[];
       const userId = req.userId as string;
+
+      const totalSize = await calculateTotalSize(userId);
+
+      let expectedTotalSize = totalSize;
+
       const boxId = req.body.boxId || (await getDefaultBoxIdForUser(userId));
 
       const filesFormattedPromises: Promise<File>[] = files.map(
@@ -45,6 +56,8 @@ const FilesController = {
             mimeType
           );
 
+          expectedTotalSize += file.size;
+
           return {
             ownerIds: [userId],
             name: originalName,
@@ -57,6 +70,10 @@ const FilesController = {
           };
         }
       );
+
+      if (expectedTotalSize > 100 * 1024 * 1024) {
+        throw new Error("Total size of files can't exceed 100 MB");
+      }
 
       const filesFormatted: File[] = await Promise.all(filesFormattedPromises);
 
@@ -206,7 +223,7 @@ const FilesController = {
         sharedKey
       );
 
-      await moveFileToSharedBox(userId, fileId);
+      // await moveFileToSharedBox(userId, fileId);
 
       return res.status(200).send({ result: true });
     } catch (error) {
@@ -249,9 +266,65 @@ const FilesController = {
         sharedKey
       );
 
-      await moveFileToTransferedBox(userId, fileId);
+      // await moveFileToTransferedBox(userId, fileId);
 
       return res.status(200).send({ result: true });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async encryptFile(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const file = req.file ? (req.file as Express.Multer.File) : undefined;
+      const signature = req.body.signature;
+
+      if (!file || !signature) {
+        return res
+          .status(400)
+          .json({ error: "No file or signature provided." });
+      }
+
+      const buffer = Buffer.from(file.buffer);
+
+      const encryptedBuffer = await encryptFileSync(buffer, signature);
+
+      res.set({
+        "Content-Type": "application/octet-stream",
+        "Content-Disposition": "attachment; filename=encrypted_file",
+      });
+
+      res.status(200).send(encryptedBuffer);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async decryptFile(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { publicUrl, signature, mimetype } = req.body;
+
+      if (!publicUrl || !signature || !mimetype) {
+        return res.status(400).json({
+          error: "publicUrl, signature, and mimetype are required fields",
+        });
+      }
+
+      const encryptedArrayBuffer = await fetchFileFromPublicUrl(publicUrl);
+
+      if (!encryptedArrayBuffer) {
+        return res.status(400).json({ error: "File not received" });
+      }
+      const encryptedBuffer = Buffer.from(encryptedArrayBuffer);
+
+      const decryptedBuffer = await decryptFileSync(encryptedBuffer, signature);
+
+      res.set({
+        "Content-Type": mimetype,
+        "Content-Disposition": "attachment; filename=decrypted_file",
+      });
+
+      res.status(200).send(decryptedBuffer);
     } catch (error) {
       next(error);
     }

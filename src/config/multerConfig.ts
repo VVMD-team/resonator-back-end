@@ -2,7 +2,7 @@ import multer from "multer";
 
 const storage = multer.memoryStorage();
 
-const limit = 4 * 1024 * 1024; // 4MB limit
+const limit = 10 * 1024 * 1024; // 10mb limit
 
 const upload = multer({
   storage,

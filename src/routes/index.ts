@@ -23,6 +23,20 @@ router.post(
   filesValidator,
   asyncHandler(FilesController.uploadFiles)
 );
+
+router.post(
+  "/encrypt-file",
+  asyncHandler(verifyToken),
+  upload.single("file"),
+  asyncHandler(FilesController.encryptFile)
+);
+
+router.post(
+  "/decrypt-file",
+  asyncHandler(verifyToken),
+  upload.any(),
+  asyncHandler(FilesController.decryptFile)
+);
 // =====================================================================
 // Auth
 router.get(
