@@ -47,11 +47,9 @@ const AuthController = {
         user = null;
       }
 
-      if (user) {
-        if (!user) {
-          return res.status(500).send({ message: "Something Went Wrong" });
-        }
+      console.log("user: ", user);
 
+      if (user) {
         if (user.signature !== signature) {
           return res.status(400).send({ error: "Invalid signature" });
         }
@@ -68,6 +66,8 @@ const AuthController = {
           walletPublicKeyInLowerCase,
           walletType
         );
+
+        console.log("isSignatureValid: ", isSignatureValid);
 
         if (!isSignatureValid) {
           return res.status(400).send({ error: "Invalid signature" });
