@@ -1,4 +1,3 @@
-import { ethers } from "ethers";
 import nacl from "tweetnacl";
 import bs58 from "bs58";
 
@@ -20,14 +19,10 @@ export default async function verifySignature(
 
       return nacl.sign.detached.verify(msgUint8, sigUint8, keyUint8);
     } else {
-      // const recoveredPublicKey = ethers.verifyMessage(message, signature);
-
       const recoveredPublicKey = await recoverMessageAddress({
         message: message,
         signature: signature,
       });
-
-      console.log({ message, signature, publicKey, recoveredPublicKey });
 
       return recoveredPublicKey.toLowerCase() === publicKey.toLowerCase();
     }

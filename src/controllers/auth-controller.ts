@@ -54,8 +54,6 @@ const AuthController = {
         walletType
       );
 
-      console.log("isSignatureValid: ", isSignatureValid);
-
       if (user) {
         if (user.signature !== signature) {
           return res.status(400).send({ error: "Invalid signature" });
