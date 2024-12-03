@@ -3,10 +3,10 @@ import nacl from "tweetnacl";
 import bs58 from "bs58";
 
 import { WALLETS } from "../../enums";
-
+import { recoverMessageAddress } from "viem";
 export default async function verifySignature(
   message: string,
-  signature: string,
+  signature: `0x${string}`,
   publicKey: string,
   walletType: WALLETS
 ): Promise<boolean> {
@@ -20,28 +20,15 @@ export default async function verifySignature(
 
       return nacl.sign.detached.verify(msgUint8, sigUint8, keyUint8);
     } else {
-      const recoveredPublicKey = ethers.verifyMessage(message, signature);
+      // const recoveredPublicKey = ethers.verifyMessage(message, signature);
 
-      const messageHash = ethers.hashMessage(message);
-      const recoveredPublicKeyWHASH = ethers.verifyMessage(
-        messageHash,
-        signature
-      );
+      const recoveredPublicKey = await recoverMessageAddress({
+        message: message,
+        signature: signature,
+      });
+      console.log({ publicKey });
+      console.log({ recoveredPublicKey });
 
-      console.log("verifySignature: ", { publicKey });
-
-      console.log("verifySignature: ", { recoveredPublicKeyWHASH });
-
-      console.log("verifySignature: ", { recoveredPublicKey });
-
-      console.log(
-        "verifySignature WHASH : ",
-        recoveredPublicKeyWHASH.toLowerCase() === publicKey.toLowerCase()
-      );
-      console.log(
-        "verifySignature2 : ",
-        recoveredPublicKey.toLowerCase() === publicKey.toLowerCase()
-      );
       return recoveredPublicKey.toLowerCase() === publicKey.toLowerCase();
     }
   } catch (error) {
