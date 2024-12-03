@@ -22,6 +22,8 @@ const AuthController = {
   async authWithWallet(req: Request, res: Response, next: NextFunction) {
     const { walletPublicKey, signature, walletType } = req.body;
 
+    console.log({ walletPublicKey, signature });
+
     try {
       const isEtheriumWallet =
         walletType === WALLETS.METAMASK ||
