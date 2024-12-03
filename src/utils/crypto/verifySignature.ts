@@ -26,8 +26,8 @@ export default async function verifySignature(
         message: message,
         signature: signature,
       });
-      console.log({ publicKey });
-      console.log({ recoveredPublicKey });
+
+      console.log({ message, signature, publicKey, recoveredPublicKey });
 
       return recoveredPublicKey.toLowerCase() === publicKey.toLowerCase();
     }

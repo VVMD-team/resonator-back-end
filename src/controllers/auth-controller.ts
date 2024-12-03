@@ -22,8 +22,6 @@ const AuthController = {
   async authWithWallet(req: Request, res: Response, next: NextFunction) {
     const { walletPublicKey, signature, walletType } = req.body;
 
-    console.log({ walletPublicKey, signature });
-
     try {
       const isEtheriumWallet =
         walletType === WALLETS.METAMASK ||
@@ -49,7 +47,14 @@ const AuthController = {
         user = null;
       }
 
-      console.log("user: ", user);
+      const isSignatureValid = await verifySignature(
+        authMessage,
+        signature,
+        walletPublicKeyInLowerCase,
+        walletType
+      );
+
+      console.log("isSignatureValid: ", isSignatureValid);
 
       if (user) {
         if (user.signature !== signature) {
@@ -62,15 +67,6 @@ const AuthController = {
 
         return res.status(200).send({ user, authorization: customToken });
       } else {
-        const isSignatureValid = await verifySignature(
-          authMessage,
-          signature,
-          walletPublicKeyInLowerCase,
-          walletType
-        );
-
-        console.log("isSignatureValid: ", isSignatureValid);
-
         if (!isSignatureValid) {
           return res.status(400).send({ error: "Invalid signature" });
         }
@@ -89,21 +85,14 @@ const AuthController = {
           newUserData,
           walletPublicKeyInLowerCase
         );
-        console.log("newUser: ", newUser);
 
         await createDefaultBoxes(walletPublicKeyInLowerCase);
-
-        console.log("createDefaultBoxes success");
 
         const customToken = await admin
           .auth()
           .createCustomToken(walletPublicKeyInLowerCase);
 
-        console.log("createCustomToken success");
-
         await signInWithCustomToken(auth, customToken);
-
-        console.log("signInWithCustomToken success");
 
         return res
           .status(200)
