@@ -22,6 +22,12 @@ export default async function verifySignature(
     } else {
       const recoveredPublicKey = ethers.verifyMessage(message, signature);
 
+      console.log("verifySignature: ", { recoveredPublicKey });
+      console.log("verifySignature: ", { publicKey });
+      console.log(
+        "verifySignature: ",
+        recoveredPublicKey.toLowerCase() === publicKey.toLowerCase()
+      );
       return recoveredPublicKey.toLowerCase() === publicKey.toLowerCase();
     }
   } catch (error) {

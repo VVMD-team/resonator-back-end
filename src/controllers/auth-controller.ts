@@ -87,13 +87,21 @@ const AuthController = {
           newUserData,
           walletPublicKeyInLowerCase
         );
+        console.log("newUser: ", newUser);
+
         await createDefaultBoxes(walletPublicKeyInLowerCase);
+
+        console.log("createDefaultBoxes success");
 
         const customToken = await admin
           .auth()
           .createCustomToken(walletPublicKeyInLowerCase);
 
+        console.log("createCustomToken success");
+
         await signInWithCustomToken(auth, customToken);
+
+        console.log("signInWithCustomToken success");
 
         return res
           .status(200)
