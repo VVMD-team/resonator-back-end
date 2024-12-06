@@ -81,7 +81,7 @@ export const getFiles = async (userId: string) => {
     return files;
   } catch (error) {
     throw new Error(
-      `Something went wrong with getting all files. Error: ${error}`
+      `Something went wrong with getting all files.  Error: ${error}`
     );
   }
 };
