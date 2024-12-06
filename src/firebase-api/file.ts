@@ -71,7 +71,12 @@ export const getFiles = async (userId: string) => {
         id: doc.id,
         ...(doc.data() as File),
       }))
-      .map((file) => ({ id: file.id, name: file.name }));
+      .map((file) => ({
+        id: file.id,
+        name: file.name,
+        size: file.size,
+        mimetype: file.mimetype,
+      }));
 
     return files;
   } catch (error) {
