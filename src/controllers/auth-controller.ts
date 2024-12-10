@@ -75,6 +75,7 @@ const AuthController = {
             walletProvider: walletType,
           },
           boxIds: [],
+          escrowIds: [],
           signature,
           createdAt: FieldValue.serverTimestamp() as Timestamp,
         };

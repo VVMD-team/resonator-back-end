@@ -4,6 +4,7 @@ export const PORT = process.env.PORT;
 export const whitelist = [
   "https://dapp-resonator-front-end.vercel.app",
   "http://localhost:3000",
+  "http://localhost:3001",
   "https://resonator.ngrok.io",
   "https://dapp.rsntr.io",
   "https://resonator-stage.webflow.io",
