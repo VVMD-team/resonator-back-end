@@ -1,16 +1,17 @@
 // src/routes/index.ts
 import { Router } from "express";
 
-import AuthController from "../controllers/auth-controller";
-import FilesController from "../controllers/files-controller";
-import UserController from "../controllers/user-controller";
+import AuthController from "controllers/auth-controller";
+import FilesController from "controllers/files-controller";
+import UserController from "controllers/user-controller";
+import BoxesController from "controllers/boxes-controller";
+import EscrowController from "controllers/escrow-controller";
 
-import verifyToken from "../middleware/verifyToken";
-import filesValidator from "../middleware/filesValidator";
-import asyncHandler from "../utils/asyncHandler";
+import verifyToken from "middleware/verifyToken";
+import filesValidator from "middleware/filesValidator";
+import asyncHandler from "utils/asyncHandler";
 
-import { upload } from "../config/multerConfig";
-import BoxesController from "../controllers/boxes-controller";
+import { upload } from "config/multerConfig";
 
 const router = Router();
 
@@ -147,6 +148,14 @@ router.post(
   asyncHandler(verifyToken),
   upload.single("file"),
   asyncHandler(FilesController.transferFile)
+);
+// =====================================================================
+// Escrow
+router.post(
+  "/escrow/create",
+  asyncHandler(verifyToken),
+  upload.single("file"),
+  asyncHandler(EscrowController.createEscrow)
 );
 
 export default router;
