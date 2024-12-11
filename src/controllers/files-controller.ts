@@ -32,6 +32,7 @@ import { calculateTotalSize } from "../firebase-api/user";
 import { encryptFileSync } from "helpers/encryptFileSync";
 import { decryptFileSync } from "helpers/decryptFileSync";
 import { fetchFileFromPublicUrl } from "helpers/fetchFileFromPublicUrl";
+import { MAX_USER_STORAGE_SIZE } from "../constants";
 
 const FilesController = {
   async uploadFiles(req: AuthRequest, res: Response, next: NextFunction) {
@@ -71,8 +72,8 @@ const FilesController = {
         }
       );
 
-      if (expectedTotalSize > 100 * 1024 * 1024) {
-        throw new Error("Total size of files can't exceed 100 MB");
+      if (expectedTotalSize > MAX_USER_STORAGE_SIZE) {
+        throw new Error("Total size of files can't exceed 1 GB");
       }
 
       const filesFormatted: File[] = await Promise.all(filesFormattedPromises);

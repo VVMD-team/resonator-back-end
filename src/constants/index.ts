@@ -36,5 +36,7 @@ export const authCookieOptions = {
 };
 
 export const MAX_FILES = 10;
+export const MAX_USER_STORAGE_SIZE = 1000 * 1024 * 1024;
+export const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024;
 
 export const authMessage = process.env.AUTH_SIGNATURE_MESSAGE as string;
