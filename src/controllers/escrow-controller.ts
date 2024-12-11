@@ -35,6 +35,9 @@ const EscrowController = {
       */
 
       /* TODO create escrow 
+
+        test commit 
+        
         const newEscrow = await createEscrow(createEscrowData);
 
         await setEscrowToUser(newEscrow?.id, userId);
