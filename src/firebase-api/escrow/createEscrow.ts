@@ -12,70 +12,76 @@ type CreateEscrowData = {
   description: string;
   dealType: ESCROW_DEALS;
 
-  fileOfferedId?: string;
-  paymentRequested?: Payment;
-  paymentOffered?: Payment;
+  ownersFileId?: string;
+  ownersPayment?: Payment;
+  requestedCounterpartyPayment?: Payment;
 };
 
 export default async function createEscrow(data: CreateEscrowData) {
   try {
+    const createdAt = FieldValue.serverTimestamp() as Timestamp;
+
     const basicData = {
       ...data,
       status: ESCROW_STATUSES.in_progress,
-      createdAt: FieldValue.serverTimestamp() as Timestamp,
+      createdAt,
     };
 
     let newEscrow: Escrow;
 
     switch (data.dealType) {
       case ESCROW_DEALS.file_to_funds:
-        if (!data.fileOfferedId || !data.paymentRequested) {
+        if (!data.ownersFileId || !data.requestedCounterpartyPayment) {
           throw new Error(
-            "fileOfferedId and paymentRequested are required for dealType file_to_funds"
+            "ownersFileId and requestedCounterpartyPayment are required for dealType file_to_funds"
           );
         }
         newEscrow = {
           ...basicData,
           dealType: ESCROW_DEALS.file_to_funds,
-          fileOfferedId: data.fileOfferedId,
-          paymentRequested: data.paymentRequested,
+          ownerData: { fileId: data.ownersFileId },
+          requestedCounterpartyData: {
+            payment: data.requestedCounterpartyPayment,
+          },
         };
         break;
       case ESCROW_DEALS.funds_to_file:
-        if (!data.paymentOffered) {
+        if (!data.ownersPayment) {
           throw new Error(
-            "paymentOffered is required for dealType funds_to_file"
+            "ownersPayment is required for dealType funds_to_file"
           );
         }
         newEscrow = {
           ...basicData,
           dealType: ESCROW_DEALS.funds_to_file,
-          paymentOffered: data.paymentOffered,
+          ownerData: { payment: data.ownersPayment },
+          requestedCounterpartyData: null,
         };
         break;
       case ESCROW_DEALS.file_to_file:
-        if (!data.fileOfferedId) {
-          throw new Error(
-            "fileOfferedId is required for dealType file_to_file"
-          );
+        if (!data.ownersFileId) {
+          throw new Error("ownersFileId is required for dealType file_to_file");
         }
         newEscrow = {
           ...basicData,
           dealType: ESCROW_DEALS.file_to_file,
-          fileOfferedId: data.fileOfferedId,
+          ownerData: { fileId: data.ownersFileId },
+          requestedCounterpartyData: null,
         };
         break;
       case ESCROW_DEALS.funds_to_funds:
-        if (!data.paymentOffered || !data.paymentRequested) {
+        if (!data.ownersPayment || !data.requestedCounterpartyPayment) {
           throw new Error(
-            "paymentOffered and paymentRequested are required for dealType funds_to_funds"
+            "ownersPayment and requestedCounterpartyPayment are required for dealType funds_to_funds"
           );
         }
         newEscrow = {
           ...basicData,
           dealType: ESCROW_DEALS.funds_to_funds,
-          paymentOffered: data.paymentOffered,
-          paymentRequested: data.paymentRequested,
+          ownerData: { payment: data.ownersPayment },
+          requestedCounterpartyData: {
+            payment: data.requestedCounterpartyPayment,
+          },
         };
         break;
       default:

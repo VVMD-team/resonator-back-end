@@ -3,7 +3,11 @@ import { ESCROW_DEALS, ESCROW_STATUSES } from "enums";
 
 import { Payment } from "./Payment";
 
-export type BaseEscrow = {
+type FileData = {
+  fileId: string;
+};
+
+type EscrowBase = {
   ownerId: string;
   counterpartyAddress: string;
   name: string;
@@ -13,31 +17,37 @@ export type BaseEscrow = {
 };
 
 // Specific Escrow types for each deal type
-export type FileToFundsEscrow = BaseEscrow & {
+type EscrowFileToFunds = EscrowBase & {
   dealType: ESCROW_DEALS.file_to_funds;
-  fileOfferedId: string;
-  paymentRequested: Payment;
+  ownerData: FileData;
+  requestedCounterpartyData: { payment: Payment };
+  counterpartyData?: { payment: Payment };
 };
 
-export type FundsToFileEscrow = BaseEscrow & {
+type EscrowFundsToFile = EscrowBase & {
   dealType: ESCROW_DEALS.funds_to_file;
-  paymentOffered: Payment;
+  ownerData: { payment: Payment };
+  requestedCounterpartyData: null;
+  counterpartyData?: FileData;
 };
 
-export type FileToFileEscrow = BaseEscrow & {
+type EscrowFileToFile = EscrowBase & {
   dealType: ESCROW_DEALS.file_to_file;
-  fileOfferedId: string;
+  ownerData: FileData;
+  requestedCounterpartyData: null;
+  counterpartyData?: FileData;
 };
 
-export type FundsToFundsEscrow = BaseEscrow & {
+type EscrowFundsToFunds = EscrowBase & {
   dealType: ESCROW_DEALS.funds_to_funds;
-  paymentOffered: Payment;
-  paymentRequested: Payment;
+  ownerData: { payment: Payment };
+  requestedCounterpartyData: { payment: Payment };
+  counterpartyData?: { payment: Payment };
 };
 
 // Union of all Escrow types
 export type Escrow =
-  | FileToFundsEscrow
-  | FundsToFileEscrow
-  | FileToFileEscrow
-  | FundsToFundsEscrow;
+  | EscrowFileToFunds
+  | EscrowFundsToFile
+  | EscrowFileToFile
+  | EscrowFundsToFunds;

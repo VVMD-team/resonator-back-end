@@ -8,6 +8,10 @@ import { ESCROW_DEALS } from "enums";
 import { uploadFileSingle } from "utils/file/uploadFile";
 
 const EscrowController = {
+  /**
+   * TODO
+   * Add get endpoint functions
+   */
   async getAllEscrows(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId as string;
@@ -38,9 +42,9 @@ const EscrowController = {
         boxId: req.body.boxId,
       });
 
-      const fileOfferedId = addedFile.id;
+      const ownersFileId = addedFile.id;
 
-      console.log({ fileOfferedId });
+      console.log({ ownersFileId });
 
       /* TODO collect and validate incoming data 
         const { name, description, dealType, counterpartyAddress } = req.body;

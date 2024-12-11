@@ -158,4 +158,9 @@ router.post(
   asyncHandler(EscrowController.createEscrow)
 );
 
+/**
+ * TODO
+ * Add get endpoint's routes
+ */
+
 export default router;
