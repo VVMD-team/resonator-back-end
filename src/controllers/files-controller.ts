@@ -1,38 +1,24 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { AuthRequest } from "../custom-types/AuthRequest";
 import {
   deleteFileById,
   getFileById,
   getFiles,
   getLastUploaded,
-  setFileIdToBox,
-  setFiles,
   shareFileToAnotherUser,
   transferFileToAnotherUser,
   checkIsUsersFile,
-  moveFileToSharedBox,
-  moveFileToTransferedBox,
+  // moveFileToSharedBox,
+  // moveFileToTransferedBox,
 } from "../firebase-api/file";
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
-import generateMockTransactionHash from "../helpers/generateMockTransactionHash";
 
-import { BOX_TYPES } from "../enums";
-
-import {
-  updateBoxSize,
-  getBoxesByUserIdAndType,
-  getDefaultBoxIdForUser,
-  getBoxesWithFile,
-} from "../firebase-api/box";
-import { File } from "../custom-types/File";
-import { uploadFileToStorage } from "../firebase-storage/file";
-
-import { calculateTotalSize } from "../firebase-api/user";
+import { updateBoxSize, getBoxesWithFile } from "../firebase-api/box";
 
 import { encryptFileSync } from "helpers/encryptFileSync";
 import { decryptFileSync } from "helpers/decryptFileSync";
 import { fetchFileFromPublicUrl } from "helpers/fetchFileFromPublicUrl";
-import { MAX_USER_STORAGE_SIZE } from "../constants";
+
+import { uploadFileMultiple } from "utils/file/uploadFile";
 
 const FilesController = {
   async uploadFiles(req: AuthRequest, res: Response, next: NextFunction) {
@@ -40,75 +26,13 @@ const FilesController = {
       const files = req.files as Express.Multer.File[];
       const userId = req.userId as string;
 
-      const totalSize = await calculateTotalSize(userId);
-
-      let expectedTotalSize = totalSize;
-
-      const boxId = req.body.boxId || (await getDefaultBoxIdForUser(userId));
-
-      const filesFormattedPromises: Promise<File>[] = files.map(
-        async (file, index) => {
-          const originalName = req.body.files[index].originalName;
-          const mimeType = req.body.files[index].mimeType;
-
-          const { filePath, publicUrl } = await uploadFileToStorage(
-            file.buffer,
-            originalName,
-            mimeType
-          );
-
-          expectedTotalSize += file.size;
-
-          return {
-            ownerIds: [userId],
-            name: originalName,
-            size: file.size,
-            mimetype: mimeType,
-            createdAt: FieldValue.serverTimestamp() as Timestamp,
-            filePath,
-            publicUrl,
-            fileTransactionHash: generateMockTransactionHash(),
-          };
-        }
-      );
-
-      if (expectedTotalSize > MAX_USER_STORAGE_SIZE) {
-        throw new Error("Total size of files can't exceed 1 GB");
-      }
-
-      const filesFormatted: File[] = await Promise.all(filesFormattedPromises);
-
-      const addedFiles = await setFiles(filesFormatted);
-
-      const fileIds = addedFiles.map(({ id }) => id);
-
-      if (boxId) {
-        await setFileIdToBox(boxId, fileIds);
-        await updateBoxSize(boxId);
-      } else {
-        const defaultBoxes = await getBoxesByUserIdAndType(
-          userId,
-          BOX_TYPES.default
-        );
-
-        if (defaultBoxes.length === 0) {
-          console.error(`User do not have default box. userId: ${userId}`);
-          throw new Error("User do not have default box.");
-        }
-
-        if (defaultBoxes.length > 1) {
-          console.error(
-            `User has more than one default box. userId: ${userId}`
-          );
-
-          throw new Error("User has more than one default box.");
-        }
-
-        const { id: defaultBoxId } = defaultBoxes[0];
-
-        await setFileIdToBox(defaultBoxId, fileIds);
-        await updateBoxSize(defaultBoxId);
-      }
+      const addedFiles = await uploadFileMultiple({
+        files,
+        filesRequestData: req.body.files,
+        userId,
+        isCheckSize: true,
+        boxId: req.body.boxId,
+      });
 
       res.status(200).send({ files: addedFiles });
     } catch (error) {

@@ -5,6 +5,8 @@ import { setEscrowToUser } from "../firebase-api/user";
 
 import { ESCROW_DEALS } from "enums";
 
+import { uploadFileSingle } from "utils/file/uploadFile";
+
 const EscrowController = {
   async getAllEscrows(req: AuthRequest, res: Response, next: NextFunction) {
     try {
@@ -21,6 +23,24 @@ const EscrowController = {
   async createEscrow(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId as string;
+
+      const file = req.file ? (req.file as Express.Multer.File) : undefined;
+
+      if (!file) {
+        return res.status(400).send({ message: "File is required" });
+      }
+
+      const addedFile = await uploadFileSingle({
+        file,
+        fileRequestData: req.body.file,
+        userId,
+        isCheckSize: false,
+        boxId: req.body.boxId,
+      });
+
+      const fileOfferedId = addedFile.id;
+
+      console.log({ fileOfferedId });
 
       /* TODO collect and validate incoming data 
         const { name, description, dealType, counterpartyAddress } = req.body;
