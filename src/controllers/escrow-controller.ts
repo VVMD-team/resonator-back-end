@@ -1,22 +1,47 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthRequest } from "../custom-types/AuthRequest";
-import { createEscrow, getEscrowsByUserId } from "../firebase-api/escrow";
+import { createEscrow, getEscrowsByUserId, getUserEscrowsByStatus, getUserInactiveEscrows } from "../firebase-api/escrow";
 import { setEscrowToUser } from "../firebase-api/user";
 
-import { ESCROW_DEALS } from "enums";
+import { ESCROW_DEALS, ESCROW_STATUSES } from "enums";
 
 import { uploadFileSingle } from "utils/file/uploadFile";
 
 const EscrowController = {
-  /**
-   * TODO
-   * Add get endpoint functions
-   */
-  async getAllEscrows(req: AuthRequest, res: Response, next: NextFunction) {
+  async getEscrowsByUserId(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId as string;
 
       const escrows = await getEscrowsByUserId(userId);
+
+      return res.status(200).send({ data: escrows, total: escrows.length });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getEscrowsByStatus(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.userId as string;
+      const { status } = req.query;
+
+      if (!status) {
+        return res.status(400).send({ message: "Status is required" });
+      }
+
+      const escrows = await getUserEscrowsByStatus(userId, status as ESCROW_STATUSES);
+
+      return res.status(200).send({ data: escrows, total: escrows.length });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getInactiveEscrows(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.userId as string;
+
+      const escrows = await getUserInactiveEscrows(userId);
 
       return res.status(200).send({ data: escrows, total: escrows.length });
     } catch (error) {
@@ -46,26 +71,38 @@ const EscrowController = {
 
       console.log({ ownersFileId });
 
-      /* TODO collect and validate incoming data 
-        const { name, description, dealType, counterpartyAddress } = req.body;
+      const { name, description, dealType, counterpartyAddress } = req.body;
 
-        if (!name || !description || !dealType || !counterpartyAddress) {
-          return res.status(400).send({
-            message:
-              "All fields (name, description, dealType, counterpartyAddress) are required",
-          });
-        }
-      
-      */
+      if (!name || !description || !dealType || !counterpartyAddress) {
+        return res.status(400).send({
+          message:
+            "All fields (name, description, dealType, counterpartyAddress) are required",
+        });
+      }
 
-      /* TODO create escrow 
-        
-        const newEscrow = await createEscrow(createEscrowData);
+      if (!Object.values(ESCROW_DEALS).includes(dealType)) {
+        return res.status(400).send({
+          message: `Invalid dealType. Must be one of: ${Object.values(
+            ESCROW_DEALS
+          ).join(", ")}`,
+        });
+      }
 
-        await setEscrowToUser(newEscrow?.id, userId);
+      const createEscrowData = {
+        ownerId: userId,
+        counterpartyAddress,
+        name,
+        description,
+        dealType,
+        ownersFileId,
+        createdAt: new Date().toISOString(),
+      };
 
-        return res.status(200).send(newEscrow);
-      */
+      const newEscrow = await createEscrow(createEscrowData);
+
+      await setEscrowToUser(newEscrow?.id, userId);
+
+      return res.status(200).send(newEscrow);
     } catch (error) {
       next(error);
     }

@@ -158,9 +158,22 @@ router.post(
   asyncHandler(EscrowController.createEscrow)
 );
 
-/**
- * TODO
- * Add get endpoint's routes
- */
+router.get(
+  "/escrow/get-all-by-user",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.getEscrowsByUserId)
+);
+
+router.get(
+  "/escrow/get-by-status",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.getEscrowsByStatus)
+);
+
+router.get(
+  "/escrow/get-inactive",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.getInactiveEscrows)
+);
 
 export default router;
