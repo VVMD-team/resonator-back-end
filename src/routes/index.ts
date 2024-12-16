@@ -176,4 +176,10 @@ router.get(
   asyncHandler(EscrowController.getInactiveEscrows)
 );
 
+router.get(
+  "/escrow/get-active",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.getActiveEscrows)
+);
+
 export default router;

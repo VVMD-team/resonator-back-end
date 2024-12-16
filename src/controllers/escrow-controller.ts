@@ -37,6 +37,18 @@ const EscrowController = {
     }
   },
 
+  async getActiveEscrows(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.userId as string;
+
+      const escrows = await getUserEscrowsByStatus(userId, ESCROW_STATUSES.in_progress);
+
+      return res.status(200).send({ data: escrows, total: escrows.length });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async getInactiveEscrows(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId as string;
