@@ -5,7 +5,7 @@ import AuthController from "controllers/auth-controller";
 import FilesController from "controllers/files-controller";
 import UserController from "controllers/user-controller";
 import BoxesController from "controllers/boxes-controller";
-import EscrowController from "controllers/escrow-controller";
+import * as EscrowController from "controllers/escrow-controller";
 
 import verifyToken from "middleware/verifyToken";
 import filesValidator from "middleware/filesValidator";
@@ -162,12 +162,6 @@ router.get(
   "/escrow/get-all-by-user",
   asyncHandler(verifyToken),
   asyncHandler(EscrowController.getEscrowsByUserId)
-);
-
-router.get(
-  "/escrow/get-by-status",
-  asyncHandler(verifyToken),
-  asyncHandler(EscrowController.getEscrowsByStatus)
 );
 
 router.get(
