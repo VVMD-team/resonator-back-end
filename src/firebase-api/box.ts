@@ -72,7 +72,11 @@ export const getBoxesByUserIdAndType = async (
       return [];
     }
 
-    const boxes = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const boxes = snapshot.docs.map((doc): Box & { id: string } => ({
+      id: doc.id,
+      ...(doc.data() as Box),
+    }));
+
     return boxes;
   } catch (error) {
     console.error("Error getting boxes by user id:", error);

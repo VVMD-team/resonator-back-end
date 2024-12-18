@@ -5,7 +5,7 @@ import { Payment } from "custom-types/Payment";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { ESCROW_DEALS, ESCROW_STATUSES, COLLECTIONS } from "enums";
 
-type CreateEscrowData = {
+export type CreateEscrowData = {
   ownerId: string;
   counterpartyAddress: string;
   name: string;

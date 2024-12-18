@@ -11,3 +11,5 @@ export type File = {
   publicUrl: string;
   sharedKey?: string;
 };
+
+// TODO new file status for escrow

@@ -28,7 +28,8 @@
     "tsconfig-paths": "^4.2.0",
     "tweetnacl": "^1.0.3",
     "uuid": "^10.0.0",
-    "viem": "^2.21.53"
+    "viem": "^2.21.53",
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.7",
