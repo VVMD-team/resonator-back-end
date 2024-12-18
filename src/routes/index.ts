@@ -158,6 +158,12 @@ router.post(
   asyncHandler(EscrowController.createEscrow)
 );
 
+router.post(
+  "/escrow/cancel",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.cancelEscrow)
+);
+
 router.get(
   "/escrow/get-all-by-user",
   asyncHandler(verifyToken),

@@ -1,3 +1,4 @@
+export { default as cancelEscrow } from "./cancelEscrow";
 export { default as createEscrow } from "./createEscrow";
 export { default as getActiveEscrows } from "./getActiveEscrows";
 export { default as getEscrowsByUserId } from "./getEscrowsByUserId";
