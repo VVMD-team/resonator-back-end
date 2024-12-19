@@ -9,8 +9,8 @@ const paymentSchema = {
 };
 
 const escrowCreateSchema = object().shape({
-  name: string().required().label("Name"),
-  description: string().required().label("Description"),
+  name: string().required().max(50).label("Name"),
+  description: string().required().max(500).label("Description"),
   counterpartyAddress: string().required().label("Counterparty Adress"),
   dealType: enumsValidator(ESCROW_DEALS).required().label("Deal type"),
 
