@@ -5,7 +5,7 @@ import {
   signOut,
 } from "../config/firebase";
 
-import { authCookieOptions, authMessage } from "../constants";
+import { authCookieOptions, authMessage } from "const";
 import { Request, Response, NextFunction } from "express";
 import { AuthRequest } from "../custom-types/AuthRequest";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";

@@ -1,8 +1,10 @@
 import { calculateTotalSize } from "firebase-api/user";
 import { File } from "custom-types/File";
-import { MAX_USER_STORAGE_SIZE } from "../../../constants";
+import { MAX_USER_STORAGE_SIZE } from "const";
 
 import { uploadFileToStorageAndFormat, addFilesToBox } from "./helpers";
+
+import { ESCROW_FILE_STATUSES } from "enums";
 
 type UploadMultipleParams = {
   files: Express.Multer.File[];
@@ -10,6 +12,7 @@ type UploadMultipleParams = {
   userId: string;
   isCheckSize: boolean;
   boxId?: string;
+  escrowFileStatus?: ESCROW_FILE_STATUSES;
 };
 
 export default async function uploadFileMultiple({
@@ -18,6 +21,7 @@ export default async function uploadFileMultiple({
   userId,
   isCheckSize = true,
   boxId,
+  escrowFileStatus,
 }: UploadMultipleParams) {
   let expectedTotalSize = isCheckSize ? await calculateTotalSize(userId) : 0;
 
@@ -34,12 +38,16 @@ export default async function uploadFileMultiple({
         expectedTotalSize += file.size;
       }
 
-      const fileFormatted = await uploadFileToStorageAndFormat(
+      const fileFormatted = await uploadFileToStorageAndFormat({
         file,
         originalName,
         mimeType,
-        userId
-      );
+        userId,
+      });
+
+      if (escrowFileStatus) {
+        fileFormatted.escrowFileStatus = escrowFileStatus;
+      }
 
       return fileFormatted;
     }

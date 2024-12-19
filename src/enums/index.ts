@@ -12,6 +12,14 @@ export enum WALLETS {
   RABBY_WALLET = "RABBY_WALLET",
 }
 
+export enum WALLET_BALANCE_CURRRENCIES {
+  RSN = "RSN",
+  ETH = "ETH",
+  WBTC = "WBTC",
+  USDT = "USDT",
+  USDC = "USDC",
+}
+
 export enum BOX_TYPES {
   custom = "custom",
   shared = "shared",
@@ -41,4 +49,11 @@ export enum ESCROW_STATUSES {
   canceled_by_owner = "canceled_by_owner",
   canceled_by_counterparty = "canceled_by_counterparty",
   expired = "expired",
+}
+
+export enum ESCROW_FILE_STATUSES {
+  created = "created",
+  on_sell_by_owner = "on_sell_by_owner",
+  on_sell_by_counterparty = "on_sell_by_counterparty",
+  sold = "sold",
 }

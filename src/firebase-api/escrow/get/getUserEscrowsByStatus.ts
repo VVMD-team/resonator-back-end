@@ -3,30 +3,27 @@ import { db } from "config/firebase";
 import { Escrow } from "custom-types/Escrow";
 import { ESCROW_STATUSES, COLLECTIONS } from "enums";
 
-export default async function getUserInactiveEscrows(
-  userId: string
+import { mapEscrowDoc } from "./helpers";
+
+export default async function getUserEscrowsByStatus(
+  userId: string,
+  status: ESCROW_STATUSES
 ): Promise<Escrow[]> {
   try {
-    const allowedStatuses = Object.values(ESCROW_STATUSES).filter(
-      (status) => status !== ESCROW_STATUSES.in_progress
-    );
-
     const escrowsRef = db.collection(COLLECTIONS.escrows);
     const snapshot = await escrowsRef
       .where("ownerId", "==", userId)
-      .where("status", "in", allowedStatuses)
+      .where("status", "==", status)
+      .orderBy("createdAt", "desc")
       .get();
 
     if (snapshot.empty) {
-      console.log(`getUserInactiveEscrows: ${userId}, snapshot empty`);
+      console.log(`getUserEscrowsByStatus: ${userId}, snapshot empty`);
       return [];
     }
 
-    const escrows = snapshot.docs.map((doc) => {
-      const escrow = doc.data() as Escrow;
+    const escrows = snapshot.docs.map(mapEscrowDoc);
 
-      return { ...escrow, id: doc.id };
-    });
     return escrows;
   } catch (error) {
     console.error("Error getting escrows by user id:", error);

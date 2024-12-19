@@ -1,21 +1,11 @@
 import { db } from "config/firebase";
 
 import { Escrow } from "custom-types/Escrow";
-import { Payment } from "custom-types/Payment";
+
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { ESCROW_DEALS, ESCROW_STATUSES, COLLECTIONS } from "enums";
 
-export type CreateEscrowData = {
-  ownerId: string;
-  counterpartyAddress: string;
-  name: string;
-  description: string;
-  dealType: ESCROW_DEALS;
-
-  ownersFileId?: string;
-  ownersPayment?: Payment;
-  requestedCounterpartyPayment?: Payment;
-};
+import CreateEscrowData from "./types/CreateEscrowData";
 
 export default async function createEscrow(data: CreateEscrowData) {
   try {

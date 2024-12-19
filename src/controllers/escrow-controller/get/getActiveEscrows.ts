@@ -17,7 +17,7 @@ export default async function getActiveEscrows(
       ESCROW_STATUSES.in_progress
     );
 
-    return res.status(200).send({ data: escrows, total: escrows.length });
+    return res.status(200).send({ escrows });
   } catch (error) {
     next(error);
   }

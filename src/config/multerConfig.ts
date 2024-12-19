@@ -1,5 +1,5 @@
 import multer from "multer";
-import { MAX_FILE_SIZE_BYTES } from "../constants";
+import { MAX_FILE_SIZE_BYTES } from "const";
 
 const storage = multer.memoryStorage();
 

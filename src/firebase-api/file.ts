@@ -1,15 +1,14 @@
-import { BOX_TYPES, COLLECTIONS } from "../enums";
+import { BOX_TYPES, COLLECTIONS } from "enums";
 import { getUserById, getUserByPublicKey } from "./user";
-import { db } from "../config/firebase";
-import { File } from "../custom-types/File";
-import { Box } from "../custom-types/Box";
-import { admin } from "../config/firebase";
+import { db } from "config/firebase";
+import { File } from "custom-types/File";
+import { Box } from "custom-types/Box";
 
 import { updateBoxSize } from "./box";
 import {
   deleteFileFromStorage,
   uploadFileToStorage,
-} from "../firebase-storage/file";
+} from "firebase-storage/file";
 
 export const setFiles = async (files: File[]) => {
   const collectionRef = db.collection(COLLECTIONS.files);
@@ -66,17 +65,10 @@ export const getFiles = async (userId: string) => {
       return [];
     }
 
-    const files = filesSnapshot.docs
-      .map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as File),
-      }))
-      .map((file) => ({
-        id: file.id,
-        name: file.name,
-        size: file.size,
-        mimetype: file.mimetype,
-      }));
+    const files = filesSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as File),
+    }));
 
     return files;
   } catch (error) {
@@ -160,7 +152,7 @@ export const getLastUploaded = async (userId: string) => {
 
   const files = filesSnapshot.docs.map((doc) => ({
     id: doc.id,
-    ...doc.data(),
+    ...(doc.data() as File),
   }));
 
   return files;
@@ -361,115 +353,4 @@ export const transferFileToAnotherUser = async (
     .update({ fileIds: [...transferedFileIds, existedFile.id] });
 
   await updateBoxSize(transferedBoxId);
-};
-
-export const moveFileToSharedBox = async (userId: string, fileId: string) => {
-  try {
-    const userRef = db.collection(COLLECTIONS.users).doc(userId);
-    const userSnapshot = await userRef.get();
-
-    if (!userSnapshot.exists) {
-      throw new Error("User not found");
-    }
-
-    const userData = userSnapshot.data();
-    if (!userData || !userData.boxIds) {
-      throw new Error("User has no boxes");
-    }
-
-    const boxIds: string[] = userData.boxIds;
-    const boxSnapshots = await db
-      .collection(COLLECTIONS.boxes)
-      .where(admin.firestore.FieldPath.documentId(), "in", boxIds)
-      .where("type", "==", BOX_TYPES.shared)
-      .get();
-
-    if (boxSnapshots.empty) {
-      throw new Error("No shared box found for user");
-    }
-
-    const sharedBoxRef = boxSnapshots.docs[0].ref;
-    const sharedBoxData = boxSnapshots.docs[0].data();
-
-    const fileIds: string[] = sharedBoxData.fileIds || [];
-    if (!fileIds.includes(fileId)) {
-      fileIds.push(fileId);
-
-      await sharedBoxRef.update({ fileIds });
-      console.log(`File ${fileId} was added to shared box for user ${userId}`);
-    } else {
-      console.log(
-        `File ${fileId} is already in the shared box for user ${userId}`
-      );
-    }
-  } catch (error) {
-    throw new Error("Error adding file to shared box: " + error);
-  }
-};
-
-export const moveFileToTransferedBox = async (
-  userId: string,
-  fileId: string
-) => {
-  try {
-    const userRef = db.collection(COLLECTIONS.users).doc(userId);
-    const userSnapshot = await userRef.get();
-
-    if (!userSnapshot.exists) {
-      throw new Error("User not found");
-    }
-
-    const userData = userSnapshot.data();
-    if (!userData || !userData.boxIds) {
-      throw new Error("User has no boxes");
-    }
-
-    const boxIds: string[] = userData.boxIds;
-
-    const currentBoxSnapshots = await db
-      .collection("boxes")
-      .where(admin.firestore.FieldPath.documentId(), "in", boxIds)
-      .where("fileIds", "array-contains", fileId)
-      .get();
-
-    if (!currentBoxSnapshots.empty) {
-      const currentBoxRef = currentBoxSnapshots.docs[0].ref;
-      const currentFileIds: string[] =
-        currentBoxSnapshots.docs[0].data().fileIds || [];
-
-      const updatedFileIds = currentFileIds.filter((id) => id !== fileId);
-      await currentBoxRef.update({ fileIds: updatedFileIds });
-      console.log(
-        `File ${fileId} removed from its current box for user ${userId}`
-      );
-    }
-
-    const transferedBoxSnapshots = await db
-      .collection("boxes")
-      .where(admin.firestore.FieldPath.documentId(), "in", boxIds)
-      .where("type", "==", BOX_TYPES.transfered)
-      .get();
-
-    if (transferedBoxSnapshots.empty) {
-      throw new Error("No transfered box found for user");
-    }
-
-    const transferedBoxRef = transferedBoxSnapshots.docs[0].ref;
-    const transferedFileIds: string[] =
-      transferedBoxSnapshots.docs[0].data().fileIds || [];
-
-    if (!transferedFileIds.includes(fileId)) {
-      transferedFileIds.push(fileId);
-      await transferedBoxRef.update({ fileIds: transferedFileIds });
-      console.log(
-        `File ${fileId} was added to transfered box for user ${userId}`
-      );
-    } else {
-      console.log(
-        `File ${fileId} is already in the transfered box for user ${userId}`
-      );
-    }
-  } catch (error) {
-    throw new Error("Error moving file to transfered box: " + error);
-  }
 };

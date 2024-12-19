@@ -4,11 +4,11 @@ import { createEscrow as createEscrowInDB } from "firebase-api/escrow";
 import { setEscrowToUser } from "firebase-api/user";
 import { getBoxesByUserIdAndType } from "firebase-api/box";
 
-import { ESCROW_DEALS, BOX_TYPES } from "enums";
+import { ESCROW_DEALS, BOX_TYPES, ESCROW_FILE_STATUSES } from "enums";
 
 import { uploadFileSingle } from "utils/file/uploadFile";
 
-import { CreateEscrowData } from "firebase-api/escrow/createEscrow";
+import { CreateEscrowData } from "firebase-api/escrow";
 
 import { escrowCreateSchema } from "schemas";
 import { ValidationError } from "yup";
@@ -113,6 +113,7 @@ export default async function createEscrow(
         userId,
         isCheckSize: false,
         boxId: filesForSellBoxId,
+        escrowFileStatus: ESCROW_FILE_STATUSES.created,
       });
 
       createEscrowData.ownersFileId = addedFile.id;

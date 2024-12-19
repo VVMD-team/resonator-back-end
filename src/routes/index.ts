@@ -2,8 +2,8 @@
 import { Router } from "express";
 
 import AuthController from "controllers/auth-controller";
-import FilesController from "controllers/files-controller";
-import UserController from "controllers/user-controller";
+import * as FilesController from "controllers/files-controller";
+import * as UserController from "controllers/user-controller";
 import BoxesController from "controllers/boxes-controller";
 import * as EscrowController from "controllers/escrow-controller";
 
@@ -165,21 +165,19 @@ router.post(
 );
 
 router.get(
-  "/escrow/get-all-by-user",
+  "/escrow/history",
   asyncHandler(verifyToken),
-  asyncHandler(EscrowController.getEscrowsByUserId)
+  asyncHandler(EscrowController.getHistory)
 );
-
 router.get(
-  "/escrow/get-inactive",
-  asyncHandler(verifyToken),
-  asyncHandler(EscrowController.getInactiveEscrows)
-);
-
-router.get(
-  "/escrow/get-active",
+  "/escrow/active",
   asyncHandler(verifyToken),
   asyncHandler(EscrowController.getActiveEscrows)
+);
+router.get(
+  "/escrow/proposed",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.getProposedEscrows)
 );
 
 export default router;

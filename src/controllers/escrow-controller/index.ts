@@ -1,5 +1,6 @@
-export { default as cancelEscrow } from "./cancelEscrow";
-export { default as createEscrow } from "./createEscrow";
-export { default as getActiveEscrows } from "./getActiveEscrows";
-export { default as getEscrowsByUserId } from "./getEscrowsByUserId";
-export { default as getInactiveEscrows } from "./getInactiveEscrows";
+export { default as cancelEscrow } from "./actions/cancelEscrow";
+export { default as createEscrow } from "./actions/createEscrow";
+
+export { default as getActiveEscrows } from "./get/getActiveEscrows";
+export { default as getHistory } from "./get/getHistory";
+export { default as getProposedEscrows } from "./get/getProposedEscrows";

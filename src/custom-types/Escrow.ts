@@ -7,6 +7,10 @@ type FileData = {
   fileId: string;
 };
 
+type PaymentData = {
+  payment: Payment;
+};
+
 type EscrowBase = {
   ownerId: string;
   counterpartyAddress: string;
@@ -16,17 +20,16 @@ type EscrowBase = {
   createdAt: Timestamp;
 };
 
-// Specific Escrow types for each deal type
 type EscrowFileToFunds = EscrowBase & {
   dealType: ESCROW_DEALS.file_to_funds;
   ownerData: FileData;
-  requestedCounterpartyData: { payment: Payment };
-  counterpartyData?: { payment: Payment };
+  requestedCounterpartyData: PaymentData;
+  counterpartyData?: PaymentData;
 };
 
 type EscrowFundsToFile = EscrowBase & {
   dealType: ESCROW_DEALS.funds_to_file;
-  ownerData: { payment: Payment };
+  ownerData: PaymentData;
   requestedCounterpartyData: null;
   counterpartyData?: FileData;
 };
@@ -40,12 +43,11 @@ type EscrowFileToFile = EscrowBase & {
 
 type EscrowFundsToFunds = EscrowBase & {
   dealType: ESCROW_DEALS.funds_to_funds;
-  ownerData: { payment: Payment };
-  requestedCounterpartyData: { payment: Payment };
-  counterpartyData?: { payment: Payment };
+  ownerData: PaymentData;
+  requestedCounterpartyData: PaymentData;
+  counterpartyData?: PaymentData;
 };
 
-// Union of all Escrow types
 export type Escrow =
   | EscrowFileToFunds
   | EscrowFundsToFile

@@ -8,12 +8,19 @@ import { setFileIdToBox, setFiles } from "firebase-api/file";
 import { BOX_TYPES } from "enums";
 import { File } from "custom-types/File";
 
-export const uploadFileToStorageAndFormat = async (
-  file: Express.Multer.File,
-  originalName: string,
-  mimeType: string,
-  userId: string
-) => {
+type UploadFileToStorageAndFormatData = {
+  file: Express.Multer.File;
+  originalName: string;
+  mimeType: string;
+  userId: string;
+};
+
+export const uploadFileToStorageAndFormat = async ({
+  file,
+  originalName,
+  mimeType,
+  userId,
+}: UploadFileToStorageAndFormatData): Promise<File> => {
   const { filePath, publicUrl } = await uploadFileToStorage(
     file.buffer,
     originalName,
