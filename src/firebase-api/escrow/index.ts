@@ -8,5 +8,6 @@ export { default as cancelEscrowByOwner } from "./actions/cancelEscrowByOwner";
 export { default as getCounterpartyActiveEscrows } from "./get/getCounterpartyActiveEscrows";
 export { default as getEscrowHistory } from "./get/getHistory";
 export { default as getUserEscrowsByStatus } from "./get/getUserEscrowsByStatus";
+export { default as getEscrowById } from "./get/getEscrowById";
 
 export { default as CreateEscrowData } from "./actions/types/CreateEscrowData";
