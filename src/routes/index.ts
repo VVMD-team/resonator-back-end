@@ -183,7 +183,7 @@ router.get(
 );
 
 router.get(
-  "/escrow/:id",
+  "/escrow/single",
   asyncHandler(verifyToken),
   asyncHandler(EscrowController.getSingleEscrow)
 );

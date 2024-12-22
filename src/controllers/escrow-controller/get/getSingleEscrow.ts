@@ -9,7 +9,7 @@ export default async function getSingleEscrow(
   next: NextFunction
 ) {
   try {
-    const escrowId = req.params.id;
+    const { id: escrowId } = req.query as { id?: string };
 
     if (!escrowId) {
       return res.status(400).send({ message: "Escrow ID is required" });
