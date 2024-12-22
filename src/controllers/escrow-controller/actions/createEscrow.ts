@@ -117,6 +117,7 @@ export default async function createEscrow(
       });
 
       createEscrowData.ownersFileId = addedFile.id;
+      createEscrowData.ownersFileName = addedFile.name;
     }
 
     if (

@@ -5,6 +5,7 @@ import { Payment } from "./Payment";
 
 type FileData = {
   fileId: string;
+  fileName: string;
 };
 
 type PaymentData = {

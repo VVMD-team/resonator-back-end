@@ -9,6 +9,7 @@ type CreateEscrowData = {
   dealType: ESCROW_DEALS;
 
   ownersFileId?: string;
+  ownersFileName?: string;
   ownersPayment?: Payment;
   requestedCounterpartyPayment?: Payment;
 };
