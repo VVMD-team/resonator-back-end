@@ -12,10 +12,13 @@ type PaymentData = {
   payment: Payment;
 };
 
-type EscrowBase = {
+type EscrowShort = {
+  name: string;
+};
+
+type EscrowBase = EscrowShort & {
   ownerId: string;
   counterpartyAddress: string;
-  name: string;
   description: string;
   status: ESCROW_STATUSES;
   createdAt: Timestamp;
@@ -48,6 +51,8 @@ type EscrowFundsToFunds = EscrowBase & {
   requestedCounterpartyData: PaymentData;
   counterpartyData?: PaymentData;
 };
+
+export type EscrowDTOShort = EscrowShort & { id: string };
 
 export type Escrow =
   | EscrowFileToFunds

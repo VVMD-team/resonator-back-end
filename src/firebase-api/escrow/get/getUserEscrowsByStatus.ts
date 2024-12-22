@@ -8,7 +8,7 @@ import { mapEscrowDoc } from "./helpers";
 export default async function getUserEscrowsByStatus(
   userId: string,
   status: ESCROW_STATUSES
-): Promise<Escrow[]> {
+): Promise<(Escrow & { id: string })[]> {
   try {
     const escrowsRef = db.collection(COLLECTIONS.escrows);
     const snapshot = await escrowsRef

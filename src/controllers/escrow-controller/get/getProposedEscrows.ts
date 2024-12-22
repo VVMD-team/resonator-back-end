@@ -1,6 +1,7 @@
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "custom-types/AuthRequest";
 import { getCounterpartyActiveEscrows } from "firebase-api/escrow";
+import { mapEscrowToDTOShort } from "utils/escrow/mappers";
 
 export default async function getProposedEscrows(
   req: AuthRequest,
@@ -12,7 +13,9 @@ export default async function getProposedEscrows(
 
     const escrows = await getCounterpartyActiveEscrows(userId);
 
-    return res.status(200).send({ escrows });
+    const escrowsDTO = escrows.map(mapEscrowToDTOShort);
+
+    return res.status(200).send({ escrows: escrowsDTO });
   } catch (error) {
     next(error);
   }

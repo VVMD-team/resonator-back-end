@@ -4,7 +4,9 @@ import { Escrow } from "custom-types/Escrow";
 
 import { mapEscrowDoc } from "./helpers";
 
-export default async function getHistory(userId: string): Promise<Escrow[]> {
+export default async function getHistory(
+  userId: string
+): Promise<(Escrow & { id: string })[]> {
   try {
     const escrowsRef = db.collection(COLLECTIONS.escrows);
 

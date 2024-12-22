@@ -1,9 +1,12 @@
 import { db } from "config/firebase";
 import { ESCROW_STATUSES, COLLECTIONS } from "enums";
+import { Escrow } from "custom-types/Escrow";
 
 import { mapEscrowDoc } from "./helpers";
 
-export default async function getCounterpartyActiveEscrows(userId: string) {
+export default async function getCounterpartyActiveEscrows(
+  userId: string
+): Promise<(Escrow & { id: string })[]> {
   try {
     const counterpartyAddress = userId;
 

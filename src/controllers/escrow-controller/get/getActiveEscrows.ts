@@ -4,6 +4,8 @@ import { getUserEscrowsByStatus as getUserEscrowsByStatusFromDB } from "firebase
 
 import { ESCROW_STATUSES } from "enums";
 
+import { mapEscrowToDTOShort } from "utils/escrow/mappers";
+
 export default async function getActiveEscrows(
   req: AuthRequest,
   res: Response,
@@ -17,7 +19,9 @@ export default async function getActiveEscrows(
       ESCROW_STATUSES.in_progress
     );
 
-    return res.status(200).send({ escrows });
+    const escrowsDTO = escrows.map(mapEscrowToDTOShort);
+
+    return res.status(200).send({ escrows: escrowsDTO });
   } catch (error) {
     next(error);
   }
