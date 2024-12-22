@@ -169,15 +169,23 @@ router.get(
   asyncHandler(verifyToken),
   asyncHandler(EscrowController.getHistory)
 );
+
 router.get(
   "/escrow/active",
   asyncHandler(verifyToken),
   asyncHandler(EscrowController.getActiveEscrows)
 );
+
 router.get(
   "/escrow/proposed",
   asyncHandler(verifyToken),
   asyncHandler(EscrowController.getProposedEscrows)
+);
+
+router.get(
+  "/escrow/:id",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.getSingleEscrow)
 );
 
 export default router;
