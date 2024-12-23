@@ -51,7 +51,7 @@ export default async function createEscrow(
         : {}),
       ...(providedCurrency && providedAmount
         ? {
-            previdedPayment: {
+            providedPayment: {
               currency: providedCurrency,
               amount: providedAmount,
             },

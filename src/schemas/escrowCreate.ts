@@ -34,7 +34,7 @@ const escrowCreateSchema = object().shape({
     })
     .label("Counterparty Payment"),
 
-  previdedPayment: object()
+  providedPayment: object()
     .when("dealType", ([dealType], schema) => {
       return [ESCROW_DEALS.funds_to_file, ESCROW_DEALS.funds_to_funds].includes(
         dealType
