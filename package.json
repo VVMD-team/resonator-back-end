@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "api/index.js",
   "scripts": {
-    "start": "ts-node -r tsconfig-paths/register dist/index.js",
+    "start": "node --max-old-space-size=4096 dist/index.js",
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/index.ts",
-    "build": "tsc && cp src/const/abi.json dist/const/"
+    "build": "tsc && tsc-alias && cp src/const/abi.json dist/const/"
   },
   "keywords": [],
   "author": "",
@@ -38,6 +38,7 @@
     "@types/uuid": "^10.0.0",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.10",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.6.3"
   }
