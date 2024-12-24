@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 
 import ngrokConfig from "./config/ngrok";
 
-import { PORT, whitelist, MAX_FILE_SIZE_BYTES } from "const";
+import { PORT, whitelist, MAX_FILE_SIZE_BYTES, isProduction } from "const";
 import router from "./routes";
 
 import errorHandler from "./utils/errorHandler";
@@ -53,11 +53,13 @@ app.use(errorHandler);
 app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);
 
-  try {
-    const listener = await ngrok.forward(ngrokConfig);
+  if (isProduction) {
+    try {
+      const listener = await ngrok.forward(ngrokConfig);
 
-    console.log("ngrok url", listener.url());
-  } catch (error) {
-    console.error("Error starting ngrok:", error);
+      console.log("ngrok url", listener.url());
+    } catch (error) {
+      console.error("Error starting ngrok:", error);
+    }
   }
 });
