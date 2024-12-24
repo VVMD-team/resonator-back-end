@@ -5,11 +5,10 @@ import cookieParser from "cookie-parser";
 
 import ngrokConfig from "./config/ngrok";
 
-import { PORT, whitelist } from "./constants";
+import { PORT, whitelist, MAX_FILE_SIZE_BYTES } from "const";
 import router from "./routes";
 
 import errorHandler from "./utils/errorHandler";
-import { MAX_FILE_SIZE_BYTES } from "./constants";
 import { bytesToMB } from "helpers/sizeConvert";
 
 const app = express();

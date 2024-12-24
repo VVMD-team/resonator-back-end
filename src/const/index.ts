@@ -39,4 +39,6 @@ export const MAX_FILES = 10;
 export const MAX_USER_STORAGE_SIZE = 1000 * 1024 * 1024;
 export const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024;
 
+export const ESCROW_SECONDS_TILL_EXPIRATION = 7 * 24 * 60 * 60; // 7 days
+
 export const authMessage = process.env.AUTH_SIGNATURE_MESSAGE as string;

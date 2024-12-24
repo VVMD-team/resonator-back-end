@@ -35,5 +35,23 @@ export const getDefaultBoxes = (userId: string): Box[] => {
       fileIds: [],
       size: 0,
     },
+    {
+      ownerId,
+      boxTransactionHash: generateMockTransactionHash(),
+      name: "Bought files",
+      type: BOX_TYPES.files_bought,
+      createdAt,
+      fileIds: [],
+      size: 0,
+    },
+    {
+      ownerId,
+      boxTransactionHash: generateMockTransactionHash(),
+      name: "Files for sell",
+      type: BOX_TYPES.files_for_sell,
+      createdAt,
+      fileIds: [],
+      size: 0,
+    },
   ];
 };

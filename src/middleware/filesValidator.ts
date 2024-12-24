@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 
-import { MAX_FILES } from "../constants";
+import { MAX_FILES } from "const";
 
 const filesValidator = async (
   req: Request,
