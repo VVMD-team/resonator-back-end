@@ -1,6 +1,20 @@
 {
   "compilerOptions": {
     "baseUrl": "./src",
+    "paths": {
+      "config/*": ["config/*"],
+      "const/*": ["const/*"],
+      "controllers/*": ["controllers/*"],
+      "custom-types/*": ["custom-types/*"],
+      "enums/*": ["enums/*"],
+      "firebase-api/*": ["firebase-api/*"],
+      "firebase-storage/*": ["firebase-storage/*"],
+      "helpers/*": ["helpers/*"],
+      "maps/*": ["maps/*"],
+      "middleware/*": ["middleware/*"],
+      "schemas/*": ["schemas/*"],
+      "utils/*": ["utils/*"]
+    },
     "moduleResolution": "node",
     "target": "ES6",
     "module": "commonjs",
@@ -18,8 +32,7 @@
     "src/**/*.ts",
     "src/types/**/*.d.ts",
     "src/index.ts",
-    "src/**/*.json",
-    "src/const/index.ts"
+    "src/**/*.json"
   ],
   "exclude": ["node_modules"]
 }
