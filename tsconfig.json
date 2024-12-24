@@ -18,7 +18,8 @@
     "src/**/*.ts",
     "src/types/**/*.d.ts",
     "src/index.ts",
-    "src/**/*.json"
+    "src/**/*.json",
+    "src/const/index.ts"
   ],
   "exclude": ["node_modules"]
 }
