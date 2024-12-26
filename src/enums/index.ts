@@ -40,7 +40,7 @@ export enum CURRENCIES {
   ETH = "ETH",
   USDT = "USDT",
   USDC = "USDC",
-  BTC = "BTC",
+  WBTC = "WBTC",
 }
 
 export enum ESCROW_STATUSES {
