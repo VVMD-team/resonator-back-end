@@ -25,7 +25,7 @@ export default async function uploadFileSingle({
   let expectedTotalSize = isCheckSize ? await calculateTotalSize(userId) : 0;
 
   const originalName = fileRequestData.originalName;
-  const mimeType = fileRequestData.mimeType;
+  const mimeType = fileRequestData.mimetype;
 
   if (!originalName || !mimeType) {
     throw new Error("File's originalName and mimeType are required");
