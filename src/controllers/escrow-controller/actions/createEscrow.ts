@@ -1,7 +1,8 @@
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "custom-types/AuthRequest";
 import { createEscrow as createEscrowInDB } from "firebase-api/escrow";
-import { setEscrowToUser } from "firebase-api/user";
+import { setEscrowToUser, getUserById } from "firebase-api/user";
+
 import { getBoxesByUserIdAndType } from "firebase-api/box";
 
 import { ESCROW_DEALS, BOX_TYPES, ESCROW_FILE_STATUSES } from "enums";
@@ -62,6 +63,16 @@ export default async function createEscrow(
     await escrowCreateSchema.validate(payload);
 
     const userId = req.userId as string;
+
+    if (userId === counterpartyAddress) {
+      throw new Error("You can not create escrow with yourself");
+    }
+
+    const counterpartyUser = getUserById(counterpartyAddress);
+
+    if (!counterpartyUser) {
+      throw new Error("Counterparty not found");
+    }
 
     const createEscrowData = {
       ownerId: userId,
