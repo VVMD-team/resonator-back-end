@@ -1,10 +1,30 @@
-import { object, string, mixed, number } from "yup";
+import { object, string, mixed } from "yup";
 import { ESCROW_DEALS, CURRENCIES } from "enums";
 
 import enumsValidator from "helpers/yup/enumsValidator";
 
 const paymentSchema = {
-  amount: number().required().positive().label("Amount"),
+  amount: string()
+    .required()
+    .test("is-valid-number", "Must be a valid number", (value) => {
+      if (value === undefined || value === null) return true;
+      return !isNaN(Number(value));
+    })
+    .test("max-decimals", "Decimal part must have up to 16 digits", (value) => {
+      if (!value) return true;
+      const decimalPart = value.split(".")[1];
+      return !decimalPart || decimalPart.length <= 16;
+    })
+    .test(
+      "max-integer",
+      "Integer part must have no more than 6 digits",
+      (value) => {
+        if (!value) return true;
+        const integerPart = value.split(".")[0].replace("-", "");
+        return integerPart.length <= 6;
+      }
+    )
+    .label("Amount"),
   currency: enumsValidator(CURRENCIES).required().label("Currency"),
 };
 
