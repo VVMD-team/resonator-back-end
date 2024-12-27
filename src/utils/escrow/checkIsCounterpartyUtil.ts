@@ -8,5 +8,8 @@ export default function checkIsCounterpartyUtil(
 ): boolean {
   const escrowData = escrowDoc.data() as Escrow;
 
-  return escrowData.counterpartyAddress === counterpartyId;
+  return (
+    escrowData.counterpartyAddress.toLowerCase() ===
+    counterpartyId.toLowerCase()
+  );
 }
