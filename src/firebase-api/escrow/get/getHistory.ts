@@ -19,7 +19,7 @@ export default async function getHistory(
       .where("ownerId", "==", userId)
       .get();
     const snapshot2 = await baseQueryByStatus
-      .where("counterpartyAddress", "==", userId)
+      .where("counterpartyAddress", "==", userId.toLowerCase())
       .get();
 
     if (snapshot1.empty && snapshot2.empty) {

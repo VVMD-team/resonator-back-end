@@ -35,12 +35,13 @@ export default async function createEscrow(
     } = req.body;
 
     const file = req.file ? (req.file as Express.Multer.File) : undefined;
+    const counterpartyAddressFormatted = counterpartyAddress.toLowerCase();
 
     const payload = {
       name,
       description,
       dealType,
-      counterpartyAddress,
+      counterpartyAddress: counterpartyAddressFormatted,
       ...(file ? { file } : {}),
       ...(counetrpartyCurrency && counetrpartyAmount
         ? {
@@ -64,19 +65,20 @@ export default async function createEscrow(
 
     const userId = req.userId as string;
 
-    if (userId === counterpartyAddress) {
+    if (userId.toLowerCase() === counterpartyAddressFormatted) {
       throw new Error("You can not create escrow with yourself");
     }
 
-    const counterpartyUser = getUserById(counterpartyAddress);
+    const counterpartyUser = await getUserById(counterpartyAddressFormatted);
 
+    console.log(counterpartyUser);
     if (!counterpartyUser) {
       throw new Error("Counterparty not found");
     }
 
     const createEscrowData = {
       ownerId: userId,
-      counterpartyAddress,
+      counterpartyAddress: counterpartyAddressFormatted,
       name,
       description,
       dealType,

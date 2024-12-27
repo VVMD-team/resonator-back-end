@@ -13,7 +13,7 @@ export default async function getCounterpartyActiveEscrows(
     const escrowsRef = db.collection(COLLECTIONS.escrows);
 
     const snapshot = await escrowsRef
-      .where("counterpartyAddress", "==", counterpartyAddress)
+      .where("counterpartyAddress", "==", counterpartyAddress.toLowerCase())
       .where("status", "==", ESCROW_STATUSES.in_progress)
       .orderBy("createdAt", "desc")
       .get();
