@@ -138,7 +138,7 @@ export default async function createEscrow(
       dealType === ESCROW_DEALS.funds_to_funds
     ) {
       createEscrowData.ownersPayment = {
-        amount: Number(providedAmount),
+        amount: providedAmount,
         currency: providedCurrency,
       };
     }
@@ -148,7 +148,7 @@ export default async function createEscrow(
       dealType === ESCROW_DEALS.funds_to_funds
     ) {
       createEscrowData.requestedCounterpartyPayment = {
-        amount: Number(counetrpartyAmount),
+        amount: counetrpartyAmount,
         currency: counetrpartyCurrency,
       };
     }

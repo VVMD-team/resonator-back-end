@@ -1,6 +1,6 @@
 import { CURRENCIES } from "enums";
 
 export type Payment = {
-  amount: number;
+  amount: string;
   currency: CURRENCIES;
 };
