@@ -3,6 +3,9 @@ import { ESCROW_DEALS, CURRENCIES } from "enums";
 
 import enumsValidator from "helpers/yup/enumsValidator";
 
+const maxDecimals = 3;
+const maxIntegers = 6;
+
 const paymentSchema = {
   amount: string()
     .required()
@@ -10,18 +13,22 @@ const paymentSchema = {
       if (value === undefined || value === null) return true;
       return !isNaN(Number(value));
     })
-    .test("max-decimals", "Decimal part must have up to 16 digits", (value) => {
-      if (!value) return true;
-      const decimalPart = value.split(".")[1];
-      return !decimalPart || decimalPart.length <= 16;
-    })
+    .test(
+      "max-decimals",
+      `Decimal part must have up to ${maxDecimals} digits`,
+      (value) => {
+        if (!value) return true;
+        const decimalPart = value.split(".")[1];
+        return !decimalPart || decimalPart.length <= maxDecimals;
+      }
+    )
     .test(
       "max-integer",
-      "Integer part must have no more than 6 digits",
+      `Integer part must have no more than ${maxIntegers} digits`,
       (value) => {
         if (!value) return true;
         const integerPart = value.split(".")[0].replace("-", "");
-        return integerPart.length <= 6;
+        return integerPart.length <= maxIntegers;
       }
     )
     .label("Amount"),
