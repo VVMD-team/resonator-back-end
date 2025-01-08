@@ -36,12 +36,13 @@ const paymentSchema = {
 };
 
 const escrowCreateSchema = object().shape({
+  contractOrderHash: string().required().label("Contract Order Hash"),
   name: string().required().max(50).label("Name"),
   description: string().required().max(500).label("Description"),
   counterpartyAddress: string().required().label("Counterparty Adress"),
   dealType: enumsValidator(ESCROW_DEALS).required().label("Deal type"),
 
-  file: mixed()
+  fileContractId: string()
     .when("dealType", ([dealType], schema) => {
       return [ESCROW_DEALS.file_to_funds, ESCROW_DEALS.file_to_file].includes(
         dealType
@@ -49,7 +50,17 @@ const escrowCreateSchema = object().shape({
         ? schema.required()
         : schema.notRequired();
     })
-    .label("File"),
+    .label("Contract File Id"),
+
+  counterpartyFileContractId: string()
+    .when("dealType", ([dealType], schema) => {
+      return [ESCROW_DEALS.funds_to_file, ESCROW_DEALS.file_to_file].includes(
+        dealType
+      )
+        ? schema.required()
+        : schema.notRequired();
+    })
+    .label("Contract Counterparty File Id"),
 
   requestedPayment: object()
     .when("dealType", ([dealType], schema) => {

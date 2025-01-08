@@ -4,7 +4,7 @@ import { ESCROW_DEALS, ESCROW_STATUSES } from "enums";
 import { Payment } from "./Payment";
 
 type FileData = {
-  fileId: string;
+  fileContractId: string;
   fileName: string;
 };
 
@@ -17,6 +17,7 @@ type EscrowShort = {
 };
 
 type EscrowBase = EscrowShort & {
+  contractOrderHash: string;
   ownerId: string;
   counterpartyAddress: string;
   description: string;
@@ -34,14 +35,14 @@ type EscrowFileToFunds = EscrowBase & {
 type EscrowFundsToFile = EscrowBase & {
   dealType: ESCROW_DEALS.funds_to_file;
   ownerData: PaymentData;
-  requestedCounterpartyData: null;
+  requestedCounterpartyData: FileData;
   counterpartyData?: FileData;
 };
 
 type EscrowFileToFile = EscrowBase & {
   dealType: ESCROW_DEALS.file_to_file;
   ownerData: FileData;
-  requestedCounterpartyData: null;
+  requestedCounterpartyData: FileData;
   counterpartyData?: FileData;
 };
 

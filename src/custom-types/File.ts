@@ -6,6 +6,7 @@ type FileShort = {
   size: number;
   mimetype: string;
   escrowFileStatus?: ESCROW_FILE_STATUSES;
+  fileContractId?: string;
 };
 export type FileDTOShort = FileShort & { id: string };
 

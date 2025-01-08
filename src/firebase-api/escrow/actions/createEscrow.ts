@@ -12,7 +12,12 @@ export default async function createEscrow(data: CreateEscrowData) {
     const createdAt = FieldValue.serverTimestamp() as Timestamp;
 
     const basicData = {
-      ...data,
+      contractOrderHash: data.contractOrderHash,
+      ownerId: data.ownerId,
+      counterpartyAddress: data.counterpartyAddress,
+      name: data.name,
+      description: data.description,
+      dealType: data.dealType,
       status: ESCROW_STATUSES.in_progress,
       createdAt,
     };
@@ -22,19 +27,19 @@ export default async function createEscrow(data: CreateEscrowData) {
     switch (data.dealType) {
       case ESCROW_DEALS.file_to_funds:
         if (
-          !data.ownersFileId ||
+          !data.ownersfileContractId ||
           !data.ownersFileName ||
           !data.requestedCounterpartyPayment
         ) {
           throw new Error(
-            "ownersFileId, ownersFileName, requestedCounterpartyPayment are required for dealType file_to_funds"
+            "ownersfileContractId, ownersFileName, requestedCounterpartyPayment are required for dealType file_to_funds"
           );
         }
         newEscrow = {
           ...basicData,
           dealType: ESCROW_DEALS.file_to_funds,
           ownerData: {
-            fileId: data.ownersFileId,
+            fileContractId: data.ownersfileContractId,
             fileName: data.ownersFileName,
           },
           requestedCounterpartyData: {
@@ -43,32 +48,42 @@ export default async function createEscrow(data: CreateEscrowData) {
         };
         break;
       case ESCROW_DEALS.funds_to_file:
-        if (!data.ownersPayment) {
+        if (!data.ownersPayment || !data.counterpartyFileContractId) {
           throw new Error(
-            "ownersPayment is required for dealType funds_to_file"
+            "ownersPayment, counterpartyFileContractId are required for dealType funds_to_file"
           );
         }
         newEscrow = {
           ...basicData,
           dealType: ESCROW_DEALS.funds_to_file,
           ownerData: { payment: data.ownersPayment },
-          requestedCounterpartyData: null,
+          requestedCounterpartyData: {
+            fileContractId: data.counterpartyFileContractId,
+            fileName: "some_name",
+          },
         };
         break;
       case ESCROW_DEALS.file_to_file:
-        if (!data.ownersFileId || !data.ownersFileName) {
+        if (
+          !data.ownersfileContractId ||
+          !data.ownersFileName ||
+          !data.counterpartyFileContractId
+        ) {
           throw new Error(
-            "ownersFileId, ownersFileName are required for dealType file_to_file"
+            "ownersfileContractId, ownersFileName, counterpartyFileContractId are required for dealType file_to_file"
           );
         }
         newEscrow = {
           ...basicData,
           dealType: ESCROW_DEALS.file_to_file,
           ownerData: {
-            fileId: data.ownersFileId,
+            fileContractId: data.ownersfileContractId,
             fileName: data.ownersFileName,
           },
-          requestedCounterpartyData: null,
+          requestedCounterpartyData: {
+            fileContractId: data.counterpartyFileContractId,
+            fileName: "some_name",
+          },
         };
         break;
       case ESCROW_DEALS.funds_to_funds:
@@ -89,8 +104,6 @@ export default async function createEscrow(data: CreateEscrowData) {
       default:
         throw new Error("Invalid deal type");
     }
-
-    console.log({ newEscrow });
 
     const docRef = await db.collection(COLLECTIONS.escrows).add(newEscrow);
     const escrowId = docRef.id;
