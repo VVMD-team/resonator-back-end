@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 const enviroment = process.env.NODE_ENV;
 console.log(`enviroment: ${enviroment}`);
 export const isProduction = enviroment === "production";

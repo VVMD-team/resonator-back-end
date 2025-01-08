@@ -36,11 +36,16 @@ export enum ESCROW_DEALS {
   funds_to_funds = "funds_to_funds",
 }
 
+// export enum CURRENCIES {
+//   ETH = "ETH",
+//   USDT = "USDT",
+//   USDC = "USDC",
+//   WBTC = "WBTC",
+// }
+// TODO remove test currencies to real after SC tests
 export enum CURRENCIES {
   ETH = "ETH",
-  USDT = "USDT",
-  USDC = "USDC",
-  WBTC = "WBTC",
+  TEST_TOKEN = "TEST_TOKEN",
 }
 
 export enum ESCROW_STATUSES {

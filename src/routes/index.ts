@@ -154,8 +154,14 @@ router.post(
 router.post(
   "/escrow/create",
   asyncHandler(verifyToken),
-  upload.single("file"),
   asyncHandler(EscrowController.createEscrow)
+);
+
+router.post(
+  "/escrow/upload-file",
+  asyncHandler(verifyToken),
+  upload.any(),
+  asyncHandler(EscrowController.uploadEscrowFile)
 );
 
 router.post(

@@ -2,12 +2,9 @@ import { Response, NextFunction } from "express";
 import { AuthRequest } from "custom-types/AuthRequest";
 import { createEscrow as createEscrowInDB } from "firebase-api/escrow";
 import { setEscrowToUser, getUserById } from "firebase-api/user";
+import { getFileByContractFileId } from "firebase-api/file";
 
-import { getBoxesByUserIdAndType } from "firebase-api/box";
-
-import { ESCROW_DEALS, BOX_TYPES, ESCROW_FILE_STATUSES } from "enums";
-
-import { uploadFileSingle } from "utils/file/uploadFile";
+import { ESCROW_DEALS } from "enums";
 
 import { CreateEscrowData } from "firebase-api/escrow";
 
@@ -22,43 +19,29 @@ export default async function createEscrow(
 ) {
   try {
     const {
+      contractOrderHash,
       name,
       description,
       dealType,
       counterpartyAddress,
-      counetrpartyCurrency,
-      counetrpartyAmount,
-      providedCurrency,
-      providedAmount,
-      fileOriginalName,
-      fileMimeType,
+      requestedPayment,
+      providedPayment,
+      fileContractId,
+      counterpartyFileContractId,
     } = req.body;
 
-    const file = req.file ? (req.file as Express.Multer.File) : undefined;
     const counterpartyAddressFormatted = counterpartyAddress.toLowerCase();
 
     const payload = {
+      contractOrderHash,
       name,
       description,
       dealType,
       counterpartyAddress: counterpartyAddressFormatted,
-      ...(file ? { file } : {}),
-      ...(counetrpartyCurrency && counetrpartyAmount
-        ? {
-            requestedPayment: {
-              currency: counetrpartyCurrency,
-              amount: counetrpartyAmount,
-            },
-          }
-        : {}),
-      ...(providedCurrency && providedAmount
-        ? {
-            providedPayment: {
-              currency: providedCurrency,
-              amount: providedAmount,
-            },
-          }
-        : {}),
+      ...(fileContractId && { fileContractId }),
+      ...(counterpartyFileContractId && { counterpartyFileContractId }),
+      ...(requestedPayment && { requestedPayment }),
+      ...(providedPayment && { providedPayment }),
     };
 
     await escrowCreateSchema.validate(payload);
@@ -77,6 +60,7 @@ export default async function createEscrow(
     }
 
     const createEscrowData = {
+      contractOrderHash,
       ownerId: userId,
       counterpartyAddress: counterpartyAddressFormatted,
       name,
@@ -89,48 +73,12 @@ export default async function createEscrow(
       dealType === ESCROW_DEALS.file_to_funds ||
       dealType === ESCROW_DEALS.file_to_file
     ) {
-      if (!file) return;
+      if (!fileContractId) return;
 
-      const filesForSellBoxes = await getBoxesByUserIdAndType(
-        userId,
-        BOX_TYPES.files_for_sell
-      );
+      const ownersFile = await getFileByContractFileId(fileContractId);
 
-      if (filesForSellBoxes.length === 0) {
-        console.error(`User do not have files_for_sell box. userId: ${userId}`);
-        throw new Error("User do not have files_for_sell box.");
-      }
-
-      if (filesForSellBoxes.length > 1) {
-        console.error(
-          `User has more than one files_for_sell box. userId: ${userId}`
-        );
-
-        throw new Error("User has more than one files_for_sell box.");
-      }
-
-      const { id: filesForSellBoxId } = filesForSellBoxes[0];
-
-      if (!fileMimeType || !fileOriginalName) {
-        res
-          .status(400)
-          .send({ message: "File mimetype and original name required" });
-      }
-
-      const addedFile = await uploadFileSingle({
-        file,
-        fileRequestData: {
-          mimetype: fileMimeType,
-          originalName: fileOriginalName,
-        },
-        userId,
-        isCheckSize: false,
-        boxId: filesForSellBoxId,
-        escrowFileStatus: ESCROW_FILE_STATUSES.created,
-      });
-
-      createEscrowData.ownersFileId = addedFile.id;
-      createEscrowData.ownersFileName = addedFile.name;
+      createEscrowData.ownersfileContractId = fileContractId;
+      createEscrowData.ownersFileName = ownersFile.name;
     }
 
     if (
@@ -138,8 +86,8 @@ export default async function createEscrow(
       dealType === ESCROW_DEALS.funds_to_funds
     ) {
       createEscrowData.ownersPayment = {
-        amount: providedAmount,
-        currency: providedCurrency,
+        amount: providedPayment.amount,
+        currency: providedPayment.currency,
       };
     }
 
@@ -148,9 +96,16 @@ export default async function createEscrow(
       dealType === ESCROW_DEALS.funds_to_funds
     ) {
       createEscrowData.requestedCounterpartyPayment = {
-        amount: counetrpartyAmount,
-        currency: counetrpartyCurrency,
+        amount: requestedPayment.amount,
+        currency: requestedPayment.currency,
       };
+    }
+
+    if (
+      dealType === ESCROW_DEALS.funds_to_file ||
+      dealType === ESCROW_DEALS.file_to_file
+    ) {
+      createEscrowData.counterpartyFileContractId = counterpartyFileContractId;
     }
 
     const newEscrow = await createEscrowInDB(createEscrowData);

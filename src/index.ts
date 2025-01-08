@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 import express, { Request, Response } from "express";
 import * as ngrok from "@ngrok/ngrok";
 import cors from "cors";
