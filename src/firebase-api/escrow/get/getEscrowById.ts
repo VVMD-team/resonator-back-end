@@ -4,7 +4,7 @@ import { COLLECTIONS } from "enums";
 
 export default async function getEscrowById(
   escrowId: string
-): Promise<Escrow | null> {
+): Promise<(Escrow & { id: string }) | null> {
   try {
     const escrowDoc = await db
       .collection(COLLECTIONS.escrows)
@@ -16,9 +16,9 @@ export default async function getEscrowById(
       return null;
     }
 
-    const data = escrowDoc.data() as Escrow;
+    const escrowData = escrowDoc.data() as Escrow;
 
-    return data;
+    return { ...escrowData, id: escrowDoc.id };
   } catch (error) {
     console.error("Error getting escrow by ID:", error);
     throw new Error("Could not retrieve escrow");

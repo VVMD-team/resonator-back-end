@@ -21,32 +21,33 @@ type EscrowBase = EscrowShort & {
   ownerId: string;
   counterpartyAddress: string;
   description: string;
+  isDeclinedFundsInContract: boolean;
   status: ESCROW_STATUSES;
   createdAt: Timestamp;
 };
 
-type EscrowFileToFunds = EscrowBase & {
+export type EscrowFileToFunds = EscrowBase & {
   dealType: ESCROW_DEALS.file_to_funds;
   ownerData: FileData;
   requestedCounterpartyData: PaymentData;
   counterpartyData?: PaymentData;
 };
 
-type EscrowFundsToFile = EscrowBase & {
+export type EscrowFundsToFile = EscrowBase & {
   dealType: ESCROW_DEALS.funds_to_file;
   ownerData: PaymentData;
   requestedCounterpartyData: FileData;
   counterpartyData?: FileData;
 };
 
-type EscrowFileToFile = EscrowBase & {
+export type EscrowFileToFile = EscrowBase & {
   dealType: ESCROW_DEALS.file_to_file;
   ownerData: FileData;
   requestedCounterpartyData: FileData;
   counterpartyData?: FileData;
 };
 
-type EscrowFundsToFunds = EscrowBase & {
+export type EscrowFundsToFunds = EscrowBase & {
   dealType: ESCROW_DEALS.funds_to_funds;
   ownerData: PaymentData;
   requestedCounterpartyData: PaymentData;

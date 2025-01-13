@@ -18,6 +18,7 @@ export default async function createEscrow(data: CreateEscrowData) {
       name: data.name,
       description: data.description,
       dealType: data.dealType,
+      isDeclinedFundsInContract: false,
       status: ESCROW_STATUSES.in_progress,
       createdAt,
     };
@@ -48,9 +49,13 @@ export default async function createEscrow(data: CreateEscrowData) {
         };
         break;
       case ESCROW_DEALS.funds_to_file:
-        if (!data.ownersPayment || !data.counterpartyFileContractId) {
+        if (
+          !data.ownersPayment ||
+          !data.counterpartyFileContractId ||
+          !data.counterpartyFileName
+        ) {
           throw new Error(
-            "ownersPayment, counterpartyFileContractId are required for dealType funds_to_file"
+            "ownersPayment, counterpartyFileContractId, counterpartyFileName are required for dealType funds_to_file"
           );
         }
         newEscrow = {
@@ -59,7 +64,7 @@ export default async function createEscrow(data: CreateEscrowData) {
           ownerData: { payment: data.ownersPayment },
           requestedCounterpartyData: {
             fileContractId: data.counterpartyFileContractId,
-            fileName: "some_name",
+            fileName: data.counterpartyFileName,
           },
         };
         break;
@@ -67,10 +72,11 @@ export default async function createEscrow(data: CreateEscrowData) {
         if (
           !data.ownersfileContractId ||
           !data.ownersFileName ||
-          !data.counterpartyFileContractId
+          !data.counterpartyFileContractId ||
+          !data.counterpartyFileName
         ) {
           throw new Error(
-            "ownersfileContractId, ownersFileName, counterpartyFileContractId are required for dealType file_to_file"
+            "ownersfileContractId, ownersFileName, counterpartyFileContractId, counterpartyFileName are required for dealType file_to_file"
           );
         }
         newEscrow = {
@@ -82,7 +88,7 @@ export default async function createEscrow(data: CreateEscrowData) {
           },
           requestedCounterpartyData: {
             fileContractId: data.counterpartyFileContractId,
-            fileName: "some_name",
+            fileName: data.counterpartyFileName,
           },
         };
         break;
