@@ -28,6 +28,7 @@ export default async function createEscrow(
       providedPayment,
       fileContractId,
       counterpartyFileContractId,
+      counterpartyFileName,
     } = req.body;
 
     const counterpartyAddressFormatted = counterpartyAddress.toLowerCase();
@@ -40,6 +41,7 @@ export default async function createEscrow(
       counterpartyAddress: counterpartyAddressFormatted,
       ...(fileContractId && { fileContractId }),
       ...(counterpartyFileContractId && { counterpartyFileContractId }),
+      ...(counterpartyFileName && { counterpartyFileName }),
       ...(requestedPayment && { requestedPayment }),
       ...(providedPayment && { providedPayment }),
     };
@@ -54,7 +56,6 @@ export default async function createEscrow(
 
     const counterpartyUser = await getUserById(counterpartyAddressFormatted);
 
-    console.log(counterpartyUser);
     if (!counterpartyUser) {
       throw new Error("Counterparty not found");
     }
@@ -106,6 +107,7 @@ export default async function createEscrow(
       dealType === ESCROW_DEALS.file_to_file
     ) {
       createEscrowData.counterpartyFileContractId = counterpartyFileContractId;
+      createEscrowData.counterpartyFileName = counterpartyFileName;
     }
 
     const newEscrow = await createEscrowInDB(createEscrowData);

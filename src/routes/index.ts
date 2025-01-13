@@ -165,9 +165,21 @@ router.post(
 );
 
 router.post(
+  "/escrow/finalise-withdraw-declined-funds",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.finaliseWithdrawDeclinedFunds)
+);
+
+router.post(
   "/escrow/cancel",
   asyncHandler(verifyToken),
   asyncHandler(EscrowController.cancelEscrow)
+);
+
+router.post(
+  "/escrow/check-validity",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.checkEscrowValidity)
 );
 
 router.get(

@@ -1,8 +1,10 @@
 import { db } from "config/firebase";
 
-import { COLLECTIONS } from "enums";
+import { COLLECTIONS, ESCROW_STATUSES, ESCROW_DEALS } from "enums";
 
 import checkIsOwnerUtil from "utils/escrow/checkIsOwnerUtil";
+
+import { Escrow } from "custom-types/Escrow";
 
 type CancelEscrowByOwnerData = {
   ownerId: string;
@@ -31,9 +33,23 @@ export default async function cancelEscrowByOwner({
       throw new Error(`Something went wrong with declining escrow.`);
     }
 
-    throw new Error("Coming soon!");
+    const status = ESCROW_STATUSES.canceled_by_owner;
+    const escrowData = escrowDoc.data() as Escrow;
 
-    // TODO: implement cancel escrow by owner
+    if (escrowData.status === status) {
+      throw new Error(`Escrow with ID ${escrowId} has already been canceled.`);
+    }
+
+    const updateData = {
+      status,
+      ...(escrowData.dealType !== ESCROW_DEALS.file_to_file && {
+        isDeclinedFundsInContract: true,
+      }),
+    };
+
+    await escrowRef.update(updateData);
+
+    return status;
   } catch (error) {
     throw new Error(
       `Something went wrong with declining escrow. Error: ${error}`

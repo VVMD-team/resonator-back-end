@@ -29,18 +29,25 @@ export default async function cancelEscrow(
     const isCounterparty = await checkIsCounterparty(userId, escrowId);
 
     if (isCounterparty) {
-      await cancelEscrowByCounterparty({ counterpartyId: userId, escrowId });
+      const status = await cancelEscrowByCounterparty({
+        counterpartyId: userId,
+        escrowId,
+      });
 
-      return res.status(200).send({ result: true });
+      return res.status(200).send({ status });
     }
 
     const isOwner = await checkIsOwner(userId, escrowId);
 
     if (isOwner) {
-      await cancelEscrowByOwner({ ownerId: userId, escrowId });
+      const status = await cancelEscrowByOwner({ ownerId: userId, escrowId });
 
-      return res.status(200).send({ result: true });
+      return res.status(200).send({ status });
     }
+
+    return res
+      .status(405)
+      .send({ message: "You are not allowed to cancel this escrow" });
   } catch (error) {
     next(error);
   }
