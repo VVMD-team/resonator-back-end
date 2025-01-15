@@ -57,8 +57,6 @@ export enum ESCROW_STATUSES {
 }
 
 export enum ESCROW_FILE_STATUSES {
-  created = "created",
-  on_sell_by_owner = "on_sell_by_owner",
-  on_sell_by_counterparty = "on_sell_by_counterparty",
+  on_sell = "on_sell",
   sold = "sold",
 }

@@ -2,11 +2,11 @@ import { Response, NextFunction } from "express";
 import { AuthRequest } from "custom-types/AuthRequest";
 import { createEscrow as createEscrowInDB } from "firebase-api/escrow";
 import { setEscrowToUser, getUserById } from "firebase-api/user";
-import { getFileByContractFileId } from "firebase-api/file";
 
-import { ESCROW_DEALS } from "enums";
+import { ESCROW_DEALS, ESCROW_FILE_STATUSES } from "enums";
 
 import { CreateEscrowData } from "firebase-api/escrow";
+import uploadEscrowFile from "utils/escrow/uploadEscrowFile";
 
 import { escrowCreateSchema } from "schemas";
 import { ValidationError } from "yup";
@@ -24,14 +24,23 @@ export default async function createEscrow(
       description,
       dealType,
       counterpartyAddress,
-      requestedPayment,
-      providedPayment,
-      fileContractId,
+      requestedPayment: requestedPaymentField,
+      providedPayment: providedPaymentField,
       counterpartyFileContractId,
-      counterpartyFileName,
+      // counterpartyFileName,
     } = req.body;
-
     const counterpartyAddressFormatted = counterpartyAddress.toLowerCase();
+
+    const requestedPayment =
+      requestedPaymentField && JSON.parse(requestedPaymentField);
+    const providedPayment =
+      providedPaymentField && JSON.parse(providedPaymentField);
+
+    const fileData = req.body.files?.[0];
+    const fileOriginalName = fileData?.fileOriginalName;
+    const fileMimeType = fileData?.fileMimeType;
+    const fileContractId = fileData?.fileContractId;
+    const fileSharedKey = fileData?.fileSharedKey;
 
     const payload = {
       contractOrderHash,
@@ -39,23 +48,24 @@ export default async function createEscrow(
       description,
       dealType,
       counterpartyAddress: counterpartyAddressFormatted,
-      ...(fileContractId && { fileContractId }),
       ...(counterpartyFileContractId && { counterpartyFileContractId }),
-      ...(counterpartyFileName && { counterpartyFileName }),
+      // ...(counterpartyFileName && { counterpartyFileName }),
       ...(requestedPayment && { requestedPayment }),
       ...(providedPayment && { providedPayment }),
-    };
 
+      ...(fileOriginalName && { fileOriginalName }),
+      ...(fileMimeType && { fileMimeType }),
+      ...(fileContractId && { fileContractId }),
+      ...(fileSharedKey && { fileSharedKey }),
+    };
     await escrowCreateSchema.validate(payload);
 
     const userId = req.userId as string;
-
     if (userId.toLowerCase() === counterpartyAddressFormatted) {
       throw new Error("You can not create escrow with yourself");
     }
 
     const counterpartyUser = await getUserById(counterpartyAddressFormatted);
-
     if (!counterpartyUser) {
       throw new Error("Counterparty not found");
     }
@@ -74,11 +84,24 @@ export default async function createEscrow(
       dealType === ESCROW_DEALS.file_to_funds ||
       dealType === ESCROW_DEALS.file_to_file
     ) {
-      if (!fileContractId) return;
+      const files = req.files as Express.Multer.File[];
+      const file = files[0];
 
-      const ownersFile = await getFileByContractFileId(fileContractId);
+      if (!file) {
+        return res.status(400).json({ error: "No file provided." });
+      }
 
-      createEscrowData.ownersfileContractId = fileContractId;
+      const ownersFile = await uploadEscrowFile({
+        userId,
+        file,
+        fileMimeType,
+        fileOriginalName,
+        fileContractId,
+        sharedKey: fileSharedKey,
+        fileStatus: ESCROW_FILE_STATUSES.on_sell,
+      });
+
+      createEscrowData.ownersfileContractId = ownersFile.fileContractId;
       createEscrowData.ownersFileName = ownersFile.name;
     }
 
@@ -107,7 +130,7 @@ export default async function createEscrow(
       dealType === ESCROW_DEALS.file_to_file
     ) {
       createEscrowData.counterpartyFileContractId = counterpartyFileContractId;
-      createEscrowData.counterpartyFileName = counterpartyFileName;
+      // createEscrowData.counterpartyFileName = counterpartyFileName;
     }
 
     const newEscrow = await createEscrowInDB(createEscrowData);

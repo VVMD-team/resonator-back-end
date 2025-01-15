@@ -265,16 +265,26 @@ export const shareFileToAnotherUser = async (
   await updateBoxSize(sharedBoxId);
 };
 
-export const transferFileToAnotherUser = async (
-  currentUserId: string,
-  walletPublicKey: string,
-  fileId: string,
-  fileBuffer?: Buffer,
-  sharedKey?: string
-) => {
-  const sharedUserData = await getUserByPublicKey(walletPublicKey);
+type TransferFileToAnotherUserData = {
+  senderUserId: string;
+  recipientWalletPublicKey: string;
+  fileId: string;
+  transferBoxType?: BOX_TYPES;
+  fileBuffer?: Buffer;
+  sharedKey?: string;
+};
 
-  const currentUser = await getUserById(currentUserId);
+export const transferFileToAnotherUser = async ({
+  senderUserId,
+  recipientWalletPublicKey,
+  fileId,
+  transferBoxType = BOX_TYPES.transfered,
+  fileBuffer,
+  sharedKey,
+}: TransferFileToAnotherUserData) => {
+  const sharedUserData = await getUserByPublicKey(recipientWalletPublicKey);
+
+  const currentUser = await getUserById(senderUserId);
 
   if (!currentUser) {
     throw new Error("User not found");
@@ -287,7 +297,7 @@ export const transferFileToAnotherUser = async (
   const transferedBoxId = await Promise.all(
     sharedUserData.boxIds.map(async (boxId) => {
       const boxDoc = await db.collection(COLLECTIONS.boxes).doc(boxId).get();
-      return boxDoc.exists && boxDoc.data()?.type === BOX_TYPES.transfered
+      return boxDoc.exists && boxDoc.data()?.type === transferBoxType
         ? boxId
         : null;
     })
@@ -303,12 +313,14 @@ export const transferFileToAnotherUser = async (
     throw new Error("File not found");
   }
 
-  if (!sharedKey && !existedFile?.sharedKey) {
-    throw new Error("Shared key is required");
-  }
-
-  if (sharedKey && !fileBuffer) {
-    throw new Error("File is required");
+  if (!existedFile.sharedKey) {
+    if (sharedKey) {
+      if (!fileBuffer) {
+        throw new Error("File is required");
+      }
+    } else {
+      throw new Error("Shared key is required");
+    }
   }
 
   const transferedBoxDoc = await db
@@ -362,10 +374,10 @@ export const transferFileToAnotherUser = async (
     createdAt: existedFile.createdAt,
     fileTransactionHash: existedFile.fileTransactionHash,
     ownerIds: [
-      ...existedFile.ownerIds.filter((id) => id !== currentUserId),
+      ...existedFile.ownerIds.filter((id) => id !== senderUserId),
       sharedUserData.id,
     ],
-    sharedKey,
+    ...(sharedKey && { sharedKey }),
   });
 
   await db

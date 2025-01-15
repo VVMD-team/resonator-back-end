@@ -154,14 +154,8 @@ router.post(
 router.post(
   "/escrow/create",
   asyncHandler(verifyToken),
-  asyncHandler(EscrowController.createEscrow)
-);
-
-router.post(
-  "/escrow/upload-file",
-  asyncHandler(verifyToken),
   upload.any(),
-  asyncHandler(EscrowController.uploadEscrowFile)
+  asyncHandler(EscrowController.createEscrow)
 );
 
 router.post(
@@ -177,9 +171,10 @@ router.post(
 );
 
 router.post(
-  "/escrow/check-validity",
+  "/escrow/finalize",
   asyncHandler(verifyToken),
-  asyncHandler(EscrowController.checkEscrowValidity)
+  upload.any(),
+  asyncHandler(EscrowController.finalizeEscrow)
 );
 
 router.get(
