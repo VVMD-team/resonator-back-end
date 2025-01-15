@@ -1,10 +1,31 @@
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "custom-types/AuthRequest";
 
-import { checkEscrowValidity as checkEscrowValidityInDB } from "firebase-api/escrow";
+import { getEscrowById, updateEscrowById } from "firebase-api/escrow";
 import { escrowFinalizeSchema } from "schemas";
+import {
+  getFileByContractFileId,
+  transferFileToAnotherUser,
+} from "firebase-api/file";
 
-import { ESCROW_DEALS } from "enums";
+import {
+  BOX_TYPES,
+  ESCROW_DEALS,
+  ESCROW_STATUSES,
+  ESCROW_FILE_STATUSES,
+} from "enums";
+
+import {
+  EscrowFileToFunds,
+  EscrowFileToFile,
+  EscrowFundsToFile,
+  // EscrowFundsToFunds,
+} from "custom-types/Escrow";
+
+import uploadEscrowFile from "utils/escrow/uploadEscrowFile";
+
+import { ValidationError } from "yup";
+import formatYupError from "helpers/yup/formatYupError";
 
 import {
   finalizeFileCurrency,
@@ -21,41 +42,197 @@ export default async function finalizeEscrow(
   try {
     const { escrowId, dealType, orderContractId } = req.body;
 
-    await escrowFinalizeSchema.validate({
+    const fileData = req.body.files?.[0];
+    const fileOriginalName = fileData?.fileOriginalName;
+    const fileMimeType = fileData?.fileMimeType;
+    const fileContractId = fileData?.fileContractId;
+    const fileSharedKey = fileData?.fileSharedKey;
+
+    const payload = {
       escrowId,
       dealType,
       orderContractId,
-    });
 
-    await checkEscrowValidityInDB({ escrowId, dealType });
+      ...(fileOriginalName && { fileOriginalName }),
+      ...(fileMimeType && { fileMimeType }),
+      ...(fileContractId && { fileContractId }),
+      ...(fileSharedKey && { fileSharedKey }),
+    };
 
-    switch (dealType) {
-      case ESCROW_DEALS.file_to_funds:
-        await finalizeFileCurrency(orderContractId);
-        // change status
-        // send file to counterparty
-        break;
-      case ESCROW_DEALS.funds_to_file:
-        await finalizeCurrencyFile(orderContractId);
-        // change status
-        // send file to owner
-        break;
-      case ESCROW_DEALS.file_to_file:
-        await finalizeFileFile(orderContractId);
-        // change status
-        // send file to counterparty
-        // send file to owner
-        break;
-      case ESCROW_DEALS.funds_to_funds:
-        await finalizeCurrencyCurrency(orderContractId);
-        // change status
-        break;
-      default:
-        throw new Error("Invalid deal type");
+    await escrowFinalizeSchema.validate(payload);
+
+    const escrow = await getEscrowById(escrowId);
+
+    if (!escrow) {
+      return res.status(404).send({ message: "Escrow not found" });
     }
 
-    return res.status(200).send({ result: true });
+    const userId = req.userId as string;
+
+    if (escrow.counterpartyAddress.toLowerCase() !== userId.toLowerCase()) {
+      return res
+        .status(405)
+        .send({ message: "You are not allowed to finalize this escrow" });
+    }
+
+    if (dealType === ESCROW_DEALS.file_to_funds) {
+      const escrowFileToFunds = escrow as EscrowFileToFunds;
+
+      if (!escrowFileToFunds.ownerData?.fileContractId) {
+        throw new Error("File not found");
+      }
+
+      const fi_to_fu_owners_file = await getFileByContractFileId(
+        escrowFileToFunds.ownerData.fileContractId
+      );
+
+      await finalizeFileCurrency(orderContractId);
+
+      // Send file from owner to counterparty
+      await transferFileToAnotherUser({
+        senderUserId: escrowFileToFunds.ownerId,
+        recipientWalletPublicKey: escrowFileToFunds.counterpartyAddress,
+        fileId: fi_to_fu_owners_file.id,
+        transferBoxType: BOX_TYPES.files_bought,
+      });
+
+      await updateEscrowById({
+        escrowId,
+        status: ESCROW_STATUSES.completed,
+      });
+
+      return res
+        .status(200)
+        .send({ result: true, status: ESCROW_STATUSES.completed });
+    }
+
+    if (dealType === ESCROW_DEALS.funds_to_file) {
+      const escrowFundsToFile = escrow as EscrowFundsToFile;
+
+      if (!escrowFundsToFile.requestedCounterpartyData?.fileContractId) {
+        throw new Error("File not found");
+      }
+
+      const files = req.files as Express.Multer.File[];
+      const file = files[0];
+
+      if (!file) {
+        return res.status(400).json({ error: "No file provided." });
+      }
+
+      const fu_to_fi_counterparty_file = await uploadEscrowFile({
+        userId,
+        file,
+        fileMimeType,
+        fileOriginalName,
+        fileContractId,
+        sharedKey: fileSharedKey,
+        fileStatus: ESCROW_FILE_STATUSES.sold,
+      });
+
+      await finalizeCurrencyFile(orderContractId);
+
+      // Send file from counterparty to owner
+      await transferFileToAnotherUser({
+        senderUserId: escrowFundsToFile.counterpartyAddress,
+        recipientWalletPublicKey: escrowFundsToFile.ownerId,
+        fileId: fu_to_fi_counterparty_file.id,
+        transferBoxType: BOX_TYPES.files_bought,
+      });
+
+      await updateEscrowById({
+        escrowId,
+        status: ESCROW_STATUSES.completed,
+        counterpartyFileName: fu_to_fi_counterparty_file.name,
+      });
+
+      return res.status(200).send({
+        result: true,
+        status: ESCROW_STATUSES.completed,
+        counterpartyFileName: fu_to_fi_counterparty_file.name,
+      });
+    }
+
+    if (dealType === ESCROW_DEALS.file_to_file) {
+      const escrowFileToFile = escrow as EscrowFileToFile;
+
+      if (!escrowFileToFile.ownerData?.fileContractId) {
+        throw new Error("Owners's file not found");
+      }
+      if (!escrowFileToFile.requestedCounterpartyData?.fileContractId) {
+        throw new Error("Counterparty's file not found");
+      }
+
+      await finalizeFileFile(orderContractId);
+
+      const fi_to_fi_owners_file = await getFileByContractFileId(
+        escrowFileToFile.ownerData.fileContractId
+      );
+
+      const files = req.files as Express.Multer.File[];
+      const file = files[0];
+
+      if (!file) {
+        return res.status(400).json({ error: "No file provided." });
+      }
+      const fi_to_fi_counterparty_file = await uploadEscrowFile({
+        userId,
+        file,
+        fileMimeType,
+        fileOriginalName,
+        fileContractId,
+        sharedKey: fileSharedKey,
+        fileStatus: ESCROW_FILE_STATUSES.sold,
+      });
+
+      // Send file from owner to counterparty
+      await transferFileToAnotherUser({
+        senderUserId: escrowFileToFile.ownerId,
+        recipientWalletPublicKey: escrowFileToFile.counterpartyAddress,
+        fileId: fi_to_fi_owners_file.id,
+        transferBoxType: BOX_TYPES.files_bought,
+      });
+
+      // Send file from counterparty to owner
+      await transferFileToAnotherUser({
+        senderUserId: escrowFileToFile.counterpartyAddress,
+        recipientWalletPublicKey: escrowFileToFile.ownerId,
+        fileId: fi_to_fi_counterparty_file.id,
+        transferBoxType: BOX_TYPES.files_bought,
+      });
+
+      await updateEscrowById({
+        escrowId,
+        status: ESCROW_STATUSES.completed,
+        counterpartyFileName: fi_to_fi_counterparty_file.name,
+      });
+
+      return res.status(200).send({
+        result: true,
+        status: ESCROW_STATUSES.completed,
+        counterpartyFileName: fi_to_fi_counterparty_file.name,
+      });
+    }
+
+    if (dealType === ESCROW_DEALS.funds_to_funds) {
+      await finalizeCurrencyCurrency(orderContractId);
+
+      await updateEscrowById({
+        escrowId,
+        status: ESCROW_STATUSES.completed,
+      });
+
+      return res
+        .status(200)
+        .send({ result: true, status: ESCROW_STATUSES.completed });
+    }
+
+    return res.status(500).send({ result: false });
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(formatYupError(error));
+    }
+
     next(error);
   }
 }

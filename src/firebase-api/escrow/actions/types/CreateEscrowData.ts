@@ -9,7 +9,7 @@ type CreateEscrowData = {
   description: string;
   dealType: ESCROW_DEALS;
 
-  counterpartyFileName?: string;
+  // counterpartyFileName?: string;
   counterpartyFileContractId?: string;
   ownersfileContractId?: string;
   ownersFileName?: string;

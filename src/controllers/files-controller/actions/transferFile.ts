@@ -33,13 +33,13 @@ export default async function transferFile(
 
     const walletPublicKeyInLowerCase = walletPublicKey.trim().toLowerCase();
 
-    await transferFileToAnotherUser(
-      userId,
-      walletPublicKeyInLowerCase,
+    await transferFileToAnotherUser({
+      senderUserId: userId,
+      recipientWalletPublicKey: walletPublicKeyInLowerCase,
       fileId,
-      file?.buffer,
-      sharedKey
-    );
+      fileBuffer: file?.buffer,
+      sharedKey,
+    });
 
     return res.status(200).send({ result: true });
   } catch (error) {

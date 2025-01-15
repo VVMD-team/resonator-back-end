@@ -51,11 +51,11 @@ export default async function createEscrow(data: CreateEscrowData) {
       case ESCROW_DEALS.funds_to_file:
         if (
           !data.ownersPayment ||
-          !data.counterpartyFileContractId ||
-          !data.counterpartyFileName
+          !data.counterpartyFileContractId
+          // !data.counterpartyFileName
         ) {
           throw new Error(
-            "ownersPayment, counterpartyFileContractId, counterpartyFileName are required for dealType funds_to_file"
+            "ownersPayment, counterpartyFileContractId are required for dealType funds_to_file"
           );
         }
         newEscrow = {
@@ -64,7 +64,7 @@ export default async function createEscrow(data: CreateEscrowData) {
           ownerData: { payment: data.ownersPayment },
           requestedCounterpartyData: {
             fileContractId: data.counterpartyFileContractId,
-            fileName: data.counterpartyFileName,
+            fileName: "File",
           },
         };
         break;
@@ -72,11 +72,11 @@ export default async function createEscrow(data: CreateEscrowData) {
         if (
           !data.ownersfileContractId ||
           !data.ownersFileName ||
-          !data.counterpartyFileContractId ||
-          !data.counterpartyFileName
+          !data.counterpartyFileContractId
+          // !data.counterpartyFileName
         ) {
           throw new Error(
-            "ownersfileContractId, ownersFileName, counterpartyFileContractId, counterpartyFileName are required for dealType file_to_file"
+            "ownersfileContractId, ownersFileName, counterpartyFileContractId are required for dealType file_to_file"
           );
         }
         newEscrow = {
@@ -88,7 +88,7 @@ export default async function createEscrow(data: CreateEscrowData) {
           },
           requestedCounterpartyData: {
             fileContractId: data.counterpartyFileContractId,
-            fileName: data.counterpartyFileName,
+            fileName: "File",
           },
         };
         break;

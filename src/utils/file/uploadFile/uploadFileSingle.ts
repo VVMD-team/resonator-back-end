@@ -13,6 +13,7 @@ type UploadSingleParams = {
   boxId?: string;
   escrowFileStatus?: ESCROW_FILE_STATUSES;
   fileContractId?: string;
+  sharedKey?: string;
 };
 
 export default async function uploadFileSingle({
@@ -23,6 +24,7 @@ export default async function uploadFileSingle({
   boxId,
   escrowFileStatus,
   fileContractId,
+  sharedKey,
 }: UploadSingleParams) {
   let expectedTotalSize = isCheckSize ? await calculateTotalSize(userId) : 0;
 
@@ -48,6 +50,9 @@ export default async function uploadFileSingle({
     userId,
   });
 
+  if (sharedKey) {
+    fileFormatted.sharedKey = sharedKey;
+  }
   if (escrowFileStatus) {
     fileFormatted.escrowFileStatus = escrowFileStatus;
   }

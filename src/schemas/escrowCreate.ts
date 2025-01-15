@@ -35,7 +35,18 @@ const paymentSchema = {
   currency: enumsValidator(CURRENCIES).required().label("Currency"),
 };
 
-const validExtensions = ["txt", "jpg", "png", "pdf", "docx", "xlsx"];
+// const validExtensions = ["txt", "jpg", "png", "pdf", "docx", "xlsx"];
+
+const checkIsRequiredDealType_file_to = (
+  [dealType]: Array<any>,
+  schema: any
+) => {
+  return [ESCROW_DEALS.file_to_funds, ESCROW_DEALS.file_to_file].includes(
+    dealType
+  )
+    ? schema.required()
+    : schema.notRequired();
+};
 
 const escrowCreateSchema = object().shape({
   contractOrderHash: string().required().label("Contract Order Hash"),
@@ -44,36 +55,39 @@ const escrowCreateSchema = object().shape({
   counterpartyAddress: string().required().label("Counterparty Adress"),
   dealType: enumsValidator(ESCROW_DEALS).required().label("Deal type"),
 
+  fileOriginalName: string()
+    .when("dealType", checkIsRequiredDealType_file_to)
+    .label("File Original Name"),
   fileContractId: string()
-    .when("dealType", ([dealType], schema) => {
-      return [ESCROW_DEALS.file_to_funds, ESCROW_DEALS.file_to_file].includes(
-        dealType
-      )
-        ? schema.required()
-        : schema.notRequired();
-    })
+    .when("dealType", checkIsRequiredDealType_file_to)
     .label("Contract File Id"),
+  fileMimeType: string()
+    .when("dealType", checkIsRequiredDealType_file_to)
+    .label("File mime Type"),
+  fileSharedKey: string()
+    .when("dealType", checkIsRequiredDealType_file_to)
+    .label("File Shared Key"),
 
-  counterpartyFileName: string()
-    .when("dealType", ([dealType], schema) => {
-      return [ESCROW_DEALS.funds_to_file, ESCROW_DEALS.file_to_file].includes(
-        dealType
-      )
-        ? schema.required()
-        : schema.notRequired();
-    })
-    .matches(
-      /^[^<>:"/\\|?*\x00-\x1F]+$/,
-      "Invalid filename: contains restricted characters"
-    )
-    .test("has-valid-extension", "Invalid file extension", (value) => {
-      if (!value) return false;
-      const extension = value.split(".").pop();
-      if (!extension) return false;
-      return validExtensions.includes(extension);
-    })
-    .max(255, "Filename too long")
-    .label("Counterparty File Name"),
+  // counterpartyFileName: string()
+  //   .when("dealType", ([dealType], schema) => {
+  //     return [ESCROW_DEALS.funds_to_file, ESCROW_DEALS.file_to_file].includes(
+  //       dealType
+  //     )
+  //       ? schema.required()
+  //       : schema.notRequired();
+  //   })
+  //   .matches(
+  //     /^[^<>:"/\\|?*\x00-\x1F]+$/,
+  //     "Invalid filename: contains restricted characters"
+  //   )
+  //   .test("has-valid-extension", "Invalid file extension", (value) => {
+  //     if (!value) return false;
+  //     const extension = value.split(".").pop();
+  //     if (!extension) return false;
+  //     return validExtensions.includes(extension);
+  //   })
+  //   .max(255, "Filename too long")
+  //   .label("Counterparty File Name"),
 
   counterpartyFileContractId: string()
     .when("dealType", ([dealType], schema) => {
