@@ -7,6 +7,7 @@ import {
   cancelEscrowByCounterparty,
   cancelEscrowByOwner,
 } from "firebase-api/escrow";
+import { createEscrowNotification } from "firebase-api/notifications";
 
 export default async function cancelEscrow(
   req: AuthRequest,
@@ -26,21 +27,32 @@ export default async function cancelEscrow(
 
     const userId = req.userId as string;
 
-    const isCounterparty = await checkIsCounterparty(userId, escrowId);
+    let status;
 
+    const [isCounterparty, escrow] = await checkIsCounterparty(
+      userId,
+      escrowId
+    );
     if (isCounterparty) {
-      const status = await cancelEscrowByCounterparty({
+      status = await cancelEscrowByCounterparty({
         counterpartyId: userId,
         escrowId,
       });
-
-      return res.status(200).send({ status });
     }
 
-    const isOwner = await checkIsOwner(userId, escrowId);
-
+    const [isOwner] = await checkIsOwner(userId, escrowId);
     if (isOwner) {
-      const status = await cancelEscrowByOwner({ ownerId: userId, escrowId });
+      status = await cancelEscrowByOwner({ ownerId: userId, escrowId });
+    }
+
+    if (status) {
+      await createEscrowNotification({
+        fromUserId: escrow.ownerId,
+        toUserId: escrow.counterpartyAddress,
+        escrowId: escrow.id,
+        escrowName: escrow.name,
+        escrowStatus: status,
+      });
 
       return res.status(200).send({ status });
     }

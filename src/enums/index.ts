@@ -3,6 +3,7 @@ export enum COLLECTIONS {
   boxes = "boxes",
   files = "files",
   escrows = "escrows",
+  notifications = "notifications",
 }
 
 export enum WALLETS {
@@ -60,4 +61,8 @@ export enum ESCROW_STATUSES {
 export enum ESCROW_FILE_STATUSES {
   on_sell = "on_sell",
   sold = "sold",
+}
+
+export enum NOTIFICATION_TYPES {
+  escrow = "escrow",
 }

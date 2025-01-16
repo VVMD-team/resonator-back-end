@@ -1,6 +1,8 @@
 require("dotenv").config();
 
 import express, { Request, Response } from "express";
+import WebSocket from "ws";
+
 import * as ngrok from "@ngrok/ngrok";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -52,8 +54,8 @@ app.use(router);
 
 app.use(errorHandler);
 
-app.listen(PORT, async () => {
-  console.log(`Listening on port ${PORT}`);
+const server = app.listen(PORT, async () => {
+  console.log(`Server is listening on port ${PORT}`);
 
   if (isProduction) {
     try {
@@ -64,4 +66,29 @@ app.listen(PORT, async () => {
       console.error("Error starting ngrok:", error);
     }
   }
+});
+
+const wss = new WebSocket.Server({ server });
+
+wss.on("listening", () => {
+  console.log(`WebSocket server is listening on port ${PORT}`);
+});
+
+wss.on("close", () => {
+  console.log("WebSocket server closed");
+});
+
+wss.on("error", (error) => {
+  console.log(`Websocket error: ${error}`);
+});
+
+wss.on("connection", (ws: WebSocket) => {
+  console.log("A new WebSocket client connected");
+
+  ws.send("Hello from backend");
+
+  ws.on("message", (message: string) => {
+    console.log(`Received message: ${message}`);
+    ws.send(`Echo: ${message}`);
+  });
 });

@@ -24,7 +24,7 @@ export default async function cancelEscrowByOwner({
       throw new Error(`Escrow with ID ${escrowId} does not exist.`);
     }
 
-    const isOwner = checkIsOwnerUtil(ownerId, escrowDoc);
+    const [isOwner] = checkIsOwnerUtil(ownerId, escrowDoc);
 
     if (!isOwner) {
       console.error(

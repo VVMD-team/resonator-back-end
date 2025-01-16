@@ -24,7 +24,7 @@ export default async function cancelEscrowByCounterparty({
       throw new Error(`Escrow with ID ${escrowId} does not exist.`);
     }
 
-    const isCounterparty = checkIsCounterpartyUtil(counterpartyId, escrowDoc);
+    const [isCounterparty] = checkIsCounterpartyUtil(counterpartyId, escrowDoc);
 
     if (!isCounterparty) {
       console.error(

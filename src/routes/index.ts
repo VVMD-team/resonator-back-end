@@ -6,6 +6,7 @@ import * as FilesController from "controllers/files-controller";
 import * as UserController from "controllers/user-controller";
 import BoxesController from "controllers/boxes-controller";
 import * as EscrowController from "controllers/escrow-controller";
+import * as NotificationController from "controllers/notification-controller";
 
 import verifyToken from "middleware/verifyToken";
 import filesValidator from "middleware/filesValidator";
@@ -199,6 +200,21 @@ router.get(
   "/escrow/single",
   asyncHandler(verifyToken),
   asyncHandler(EscrowController.getSingleEscrow)
+);
+
+// =====================================================================
+// Notification
+
+router.post(
+  "/notifications/view",
+  asyncHandler(verifyToken),
+  asyncHandler(NotificationController.viewNotification)
+);
+
+router.get(
+  "/notifications",
+  asyncHandler(verifyToken),
+  asyncHandler(NotificationController.getNotifications)
 );
 
 export default router;

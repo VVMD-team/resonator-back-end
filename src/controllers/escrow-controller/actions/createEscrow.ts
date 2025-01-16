@@ -6,6 +6,7 @@ import { setEscrowToUser, getUserById } from "firebase-api/user";
 import { ESCROW_DEALS, ESCROW_FILE_STATUSES } from "enums";
 
 import { CreateEscrowData } from "firebase-api/escrow";
+import { createEscrowNotification } from "firebase-api/notifications";
 import uploadEscrowFile from "utils/escrow/uploadEscrowFile";
 
 import { escrowCreateSchema } from "schemas";
@@ -136,6 +137,14 @@ export default async function createEscrow(
     const newEscrow = await createEscrowInDB(createEscrowData);
 
     await setEscrowToUser(newEscrow.id, userId);
+
+    await createEscrowNotification({
+      fromUserId: newEscrow.ownerId,
+      toUserId: newEscrow.counterpartyAddress,
+      escrowId: newEscrow.id,
+      escrowName: newEscrow.name,
+      escrowStatus: newEscrow.status,
+    });
 
     return res.status(200).send(newEscrow);
   } catch (error) {
