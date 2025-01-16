@@ -4,7 +4,12 @@ import { COLLECTIONS } from "enums";
 
 import checkIsOwnerUtil from "utils/escrow/checkIsOwnerUtil";
 
-export default async function checkIsOwner(ownerId: string, escrowId: string) {
+import { Escrow } from "custom-types/Escrow";
+
+export default async function checkIsOwner(
+  ownerId: string,
+  escrowId: string
+): Promise<[boolean, Escrow & { id: string }]> {
   const escrowRef = db.collection(COLLECTIONS.escrows).doc(escrowId);
 
   const escrowDoc = await escrowRef.get();

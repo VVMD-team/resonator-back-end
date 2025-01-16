@@ -5,11 +5,12 @@ import { DocumentSnapshot } from "firebase-admin/firestore";
 export default function checkIsCounterpartyUtil(
   counterpartyId: string,
   escrowDoc: DocumentSnapshot
-): boolean {
+): [boolean, Escrow & { id: string }] {
   const escrowData = escrowDoc.data() as Escrow;
 
-  return (
+  return [
     escrowData.counterpartyAddress.toLowerCase() ===
-    counterpartyId.toLowerCase()
-  );
+      counterpartyId.toLowerCase(),
+    { ...escrowData, id: escrowDoc.id },
+  ];
 }
