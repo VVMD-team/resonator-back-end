@@ -11,7 +11,7 @@ export default async function updateNotificationViewedById(
     return await docRef.update({ isViewed: true });
   } catch (error) {
     throw new Error(
-      `Something went wrong with creating escrow notification. Error: ${error}`
+      `Something went wrong with updating escrow notification viewed. Error: ${error}`
     );
   }
 }
