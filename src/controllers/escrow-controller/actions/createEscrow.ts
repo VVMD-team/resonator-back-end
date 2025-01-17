@@ -13,6 +13,9 @@ import { escrowCreateSchema } from "schemas";
 import { ValidationError } from "yup";
 import formatYupError from "helpers/yup/formatYupError";
 
+import sendNotification from "utils/notifications/sendNotification";
+import { mapNotificationToDTO } from "utils/notifications/mappers";
+
 export default async function createEscrow(
   req: AuthRequest,
   res: Response,
@@ -138,13 +141,17 @@ export default async function createEscrow(
 
     await setEscrowToUser(newEscrow.id, userId);
 
-    await createEscrowNotification({
+    const notification = await createEscrowNotification({
       fromUserId: newEscrow.ownerId,
       toUserId: newEscrow.counterpartyAddress,
       escrowId: newEscrow.id,
       escrowName: newEscrow.name,
       escrowStatus: newEscrow.status,
     });
+
+    const notificationDTO = mapNotificationToDTO(notification);
+    sendNotification(newEscrow.ownerId, notificationDTO);
+    sendNotification(newEscrow.counterpartyAddress, notificationDTO);
 
     return res.status(200).send(newEscrow);
   } catch (error) {

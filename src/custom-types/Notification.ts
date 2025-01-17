@@ -6,13 +6,18 @@ type NotificationUserData = {
   id: string;
 };
 
-type NotificationBase = {
-  type: NOTIFICATION_TYPES;
-  createdAt: Timestamp;
+type NotificationParticipants = {
   userFrom: NotificationUserData;
   userTo: NotificationUserData;
+};
+
+type NotificationBasicData = {
+  type: NOTIFICATION_TYPES;
+  createdAt: Timestamp;
   isViewed: boolean;
 };
+
+type NotificationBase = NotificationParticipants & NotificationBasicData;
 
 export type EscrowNotification = NotificationBase & {
   escrowData: {
@@ -20,6 +25,12 @@ export type EscrowNotification = NotificationBase & {
     name: string;
     status: ESCROW_STATUSES;
   };
+};
+
+export type NotificationDTO = NotificationBasicData & {
+  id: string;
+  linkId: string;
+  message: string;
 };
 
 export type Notification = EscrowNotification;

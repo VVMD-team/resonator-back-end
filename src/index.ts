@@ -1,7 +1,6 @@
 require("dotenv").config();
 
 import express, { Request, Response } from "express";
-import WebSocket from "ws";
 
 import * as ngrok from "@ngrok/ngrok";
 import cors from "cors";
@@ -14,6 +13,8 @@ import router from "./routes";
 
 import errorHandler from "./utils/errorHandler";
 import { bytesToMB } from "helpers/sizeConvert";
+
+import { startWSServer } from "websocket-server";
 
 const app = express();
 
@@ -68,27 +69,4 @@ const server = app.listen(PORT, async () => {
   }
 });
 
-const wss = new WebSocket.Server({ server });
-
-wss.on("listening", () => {
-  console.log(`WebSocket server is listening on port ${PORT}`);
-});
-
-wss.on("close", () => {
-  console.log("WebSocket server closed");
-});
-
-wss.on("error", (error) => {
-  console.log(`Websocket error: ${error}`);
-});
-
-wss.on("connection", (ws: WebSocket) => {
-  console.log("A new WebSocket client connected");
-
-  ws.send("Hello from backend");
-
-  ws.on("message", (message: string) => {
-    console.log(`Received message: ${message}`);
-    ws.send(`Echo: ${message}`);
-  });
-});
+startWSServer(server);

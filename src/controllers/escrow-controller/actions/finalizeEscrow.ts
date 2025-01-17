@@ -35,6 +35,9 @@ import {
   finalizeCurrencyCurrency,
 } from "contract-api/escrow-swap";
 
+import sendNotification from "utils/notifications/sendNotification";
+import { mapNotificationToDTO } from "utils/notifications/mappers";
+
 export default async function finalizeEscrow(
   req: AuthRequest,
   res: Response,
@@ -228,13 +231,17 @@ export default async function finalizeEscrow(
           .send({ result: false, message: "Invalid Deal type" });
     }
 
-    createEscrowNotification({
+    const notification = await createEscrowNotification({
       fromUserId: escrow.ownerId,
       toUserId: escrow.counterpartyAddress,
       escrowId: escrow.id,
       escrowName: escrow.name,
       escrowStatus: ESCROW_STATUSES.completed,
     });
+
+    const notificationDTO = mapNotificationToDTO(notification);
+    sendNotification(escrow.ownerId, notificationDTO);
+    sendNotification(escrow.counterpartyAddress, notificationDTO);
 
     return res.status(200).send({
       result: true,

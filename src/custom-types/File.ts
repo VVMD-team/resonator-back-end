@@ -22,5 +22,3 @@ export type File = FileBase & {
   filePath: string;
   publicUrl: string;
 };
-
-// TODO transfer file on sale
