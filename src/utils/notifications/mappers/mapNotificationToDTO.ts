@@ -23,16 +23,16 @@ export default function mapNotificationToDTO(
 
       const message = (() => {
         if (status === ESCROW_STATUSES.in_progress) {
-          return `${name} new escrow`;
+          return `"${name}" new escrow`;
         }
         if (
           status === ESCROW_STATUSES.canceled_by_counterparty ||
           status === ESCROW_STATUSES.canceled_by_owner
         ) {
-          return `${name} was cancelled`;
+          return `"${name}" was cancelled`;
         }
         if (status === ESCROW_STATUSES.completed) {
-          return `${name} is completed successfully`;
+          return `"${name}" is completed successfully`;
         }
 
         return "";

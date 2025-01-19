@@ -6,15 +6,14 @@ import { setEscrowToUser, getUserById } from "firebase-api/user";
 import { ESCROW_DEALS, ESCROW_FILE_STATUSES } from "enums";
 
 import { CreateEscrowData } from "firebase-api/escrow";
-import { createEscrowNotification } from "firebase-api/notifications";
+
 import uploadEscrowFile from "utils/escrow/uploadEscrowFile";
 
 import { escrowCreateSchema } from "schemas";
 import { ValidationError } from "yup";
 import formatYupError from "helpers/yup/formatYupError";
 
-import sendNotification from "utils/notifications/sendNotification";
-import { mapNotificationToDTO } from "utils/notifications/mappers";
+import createAndSendEscrowNotificationsToParticipants from "utils/escrow/createAndSendEscrowNotificationsToParticipants";
 
 export default async function createEscrow(
   req: AuthRequest,
@@ -141,17 +140,13 @@ export default async function createEscrow(
 
     await setEscrowToUser(newEscrow.id, userId);
 
-    const notification = await createEscrowNotification({
-      fromUserId: newEscrow.ownerId,
-      toUserId: newEscrow.counterpartyAddress,
+    await createAndSendEscrowNotificationsToParticipants({
+      ownerId: newEscrow.ownerId,
+      counterpartyAddress: newEscrow.counterpartyAddress,
       escrowId: newEscrow.id,
       escrowName: newEscrow.name,
       escrowStatus: newEscrow.status,
     });
-
-    const notificationDTO = mapNotificationToDTO(notification);
-    sendNotification(newEscrow.ownerId, notificationDTO);
-    sendNotification(newEscrow.counterpartyAddress, notificationDTO);
 
     return res.status(200).send(newEscrow);
   } catch (error) {
