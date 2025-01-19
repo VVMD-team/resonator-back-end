@@ -7,8 +7,8 @@ type NotificationUserData = {
 };
 
 type NotificationParticipants = {
-  userFrom: NotificationUserData;
   userTo: NotificationUserData;
+  userFrom?: NotificationUserData;
 };
 
 type NotificationBasicData = {

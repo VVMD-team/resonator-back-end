@@ -7,7 +7,6 @@ import {
   getFileByContractFileId,
   transferFileToAnotherUser,
 } from "firebase-api/file";
-import { createEscrowNotification } from "firebase-api/notifications";
 
 import {
   BOX_TYPES,
@@ -35,8 +34,7 @@ import {
   finalizeCurrencyCurrency,
 } from "contract-api/escrow-swap";
 
-import sendNotification from "utils/notifications/sendNotification";
-import { mapNotificationToDTO } from "utils/notifications/mappers";
+import createAndSendEscrowNotificationsToParticipants from "utils/escrow/createAndSendEscrowNotificationsToParticipants";
 
 export default async function finalizeEscrow(
   req: AuthRequest,
@@ -231,17 +229,13 @@ export default async function finalizeEscrow(
           .send({ result: false, message: "Invalid Deal type" });
     }
 
-    const notification = await createEscrowNotification({
-      fromUserId: escrow.ownerId,
-      toUserId: escrow.counterpartyAddress,
+    await createAndSendEscrowNotificationsToParticipants({
+      ownerId: escrow.ownerId,
+      counterpartyAddress: escrow.counterpartyAddress,
       escrowId: escrow.id,
       escrowName: escrow.name,
       escrowStatus: ESCROW_STATUSES.completed,
     });
-
-    const notificationDTO = mapNotificationToDTO(notification);
-    sendNotification(escrow.ownerId, notificationDTO);
-    sendNotification(escrow.counterpartyAddress, notificationDTO);
 
     return res.status(200).send({
       result: true,

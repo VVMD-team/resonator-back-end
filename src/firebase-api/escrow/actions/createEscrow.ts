@@ -64,7 +64,7 @@ export default async function createEscrow(data: CreateEscrowData) {
           ownerData: { payment: data.ownersPayment },
           requestedCounterpartyData: {
             fileContractId: data.counterpartyFileContractId,
-            fileName: "File",
+            fileName: "file name",
           },
         };
         break;
@@ -88,7 +88,7 @@ export default async function createEscrow(data: CreateEscrowData) {
           },
           requestedCounterpartyData: {
             fileContractId: data.counterpartyFileContractId,
-            fileName: "File",
+            fileName: "file name",
           },
         };
         break;

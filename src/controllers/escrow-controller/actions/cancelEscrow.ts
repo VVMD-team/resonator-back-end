@@ -7,9 +7,8 @@ import {
   cancelEscrowByCounterparty,
   cancelEscrowByOwner,
 } from "firebase-api/escrow";
-import { createEscrowNotification } from "firebase-api/notifications";
-import sendNotification from "utils/notifications/sendNotification";
-import { mapNotificationToDTO } from "utils/notifications/mappers";
+
+import createAndSendEscrowNotificationsToParticipants from "utils/escrow/createAndSendEscrowNotificationsToParticipants";
 
 export default async function cancelEscrow(
   req: AuthRequest,
@@ -48,17 +47,13 @@ export default async function cancelEscrow(
     }
 
     if (status) {
-      const notification = await createEscrowNotification({
-        fromUserId: escrow.ownerId,
-        toUserId: escrow.counterpartyAddress,
+      await createAndSendEscrowNotificationsToParticipants({
+        ownerId: escrow.ownerId,
+        counterpartyAddress: escrow.counterpartyAddress,
         escrowId: escrow.id,
         escrowName: escrow.name,
         escrowStatus: status,
       });
-
-      const notificationDTO = mapNotificationToDTO(notification);
-      sendNotification(escrow.ownerId, notificationDTO);
-      sendNotification(escrow.counterpartyAddress, notificationDTO);
 
       return res.status(200).send({ status });
     }
