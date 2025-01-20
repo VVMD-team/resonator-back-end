@@ -1,6 +1,8 @@
 export { default as checkIsOwner } from "./check/checkIsOwner";
 export { default as checkIsCounterparty } from "./check/checkIsCounterparty";
 
+export { default as updateAllEscrowsExpiredStatus } from "./cron/updateAllEscrowsExpiredStatus";
+
 export { default as createEscrow } from "./actions/createEscrow";
 export { default as cancelEscrowByCounterparty } from "./actions/cancelEscrowByCounterparty";
 export { default as cancelEscrowByOwner } from "./actions/cancelEscrowByOwner";
