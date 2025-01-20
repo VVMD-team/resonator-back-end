@@ -1,7 +1,11 @@
+import { isProduction } from "const";
+
 import { ethers } from "ethers";
 import abi from "./abi";
 
-const url = "https://data-seed-prebsc-1-s1.binance.org:8545/"; // BSC testnet
+const testnetUrl = "https://data-seed-prebsc-1-s1.binance.org:8545/"; // BSC testnet
+const mainnetUrl = "https://bsc-dataseed.binance.org/"; // BSC Mainnet
+const url = isProduction ? mainnetUrl : testnetUrl;
 
 const provider = new ethers.JsonRpcProvider(url);
 
