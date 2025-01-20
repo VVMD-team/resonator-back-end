@@ -172,6 +172,12 @@ router.post(
 );
 
 router.post(
+  "/escrow/expire",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.expireEscrow)
+);
+
+router.post(
   "/escrow/finalize",
   asyncHandler(verifyToken),
   upload.any(),

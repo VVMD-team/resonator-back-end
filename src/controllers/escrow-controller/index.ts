@@ -1,5 +1,6 @@
 export { default as cancelEscrow } from "./actions/cancelEscrow";
 export { default as createEscrow } from "./actions/createEscrow";
+export { default as expireEscrow } from "./actions/expireEscrow";
 export { default as finaliseWithdrawDeclinedFunds } from "./actions/finaliseWithdrawDeclinedFunds";
 export { default as finalizeEscrow } from "./actions/finalizeEscrow";
 
