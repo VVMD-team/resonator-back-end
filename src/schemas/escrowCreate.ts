@@ -1,5 +1,5 @@
-import { object, string } from "yup";
-import { ESCROW_DEALS, CURRENCIES } from "enums";
+import { object, string, mixed } from "yup";
+import { ESCROW_DEALS, currencyValues } from "enums";
 
 import enumsValidator from "helpers/yup/enumsValidator";
 
@@ -32,7 +32,10 @@ const paymentSchema = {
       }
     )
     .label("Amount"),
-  currency: enumsValidator(CURRENCIES).required().label("Currency"),
+  currency: mixed()
+    .oneOf(currencyValues, "Invalid currency")
+    .required()
+    .label("Currency"),
 };
 
 // const validExtensions = ["txt", "jpg", "png", "pdf", "docx", "xlsx"];

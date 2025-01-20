@@ -1,3 +1,5 @@
+import { isProduction } from "const";
+
 export enum COLLECTIONS {
   users = "users",
   boxes = "boxes",
@@ -37,18 +39,23 @@ export enum ESCROW_DEALS {
   funds_to_funds = "funds_to_funds",
 }
 
-// export enum CURRENCIES {
-//   ETH = "ETH",
-//   USDT = "USDT",
-//   USDC = "USDC",
-//   WBTC = "WBTC",
-// }
-// TODO remove test currencies to real after SC tests
-export enum CURRENCIES {
+enum ProdCurrencies {
+  ETH = "ETH",
+  USDT = "USDT",
+  USDC = "USDC",
+  WBTC = "WBTC",
+}
+enum DevCurrencies {
   ETH = "ETH",
   TEST_TOKEN = "TEST_TOKEN",
   UNICORN_SUPER_ROCKET_TOKEN = "UNICORN_SUPER_ROCKET_TOKEN",
 }
+export type CURRENCIES = typeof isProduction extends true
+  ? keyof typeof ProdCurrencies
+  : keyof typeof DevCurrencies;
+export const currencyValues = isProduction
+  ? Object.values(ProdCurrencies)
+  : Object.values(DevCurrencies);
 
 export enum ESCROW_STATUSES {
   in_progress = "in_progress",
