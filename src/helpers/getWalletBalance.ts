@@ -29,6 +29,7 @@ export default async function getWalletBalance(
   );
 
   const balance = await contract.balanceOf(walletAddress);
+
   const balanceFormatted = ethers.formatUnits(balance, 18);
 
   return Number(balanceFormatted);
