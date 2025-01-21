@@ -1,16 +1,18 @@
 // src/routes/index.ts
 import { Router } from "express";
 
-import AuthController from "../controllers/auth-controller";
-import FilesController from "../controllers/files-controller";
-import UserController from "../controllers/user-controller";
+import AuthController from "controllers/auth-controller";
+import * as FilesController from "controllers/files-controller";
+import * as UserController from "controllers/user-controller";
+import BoxesController from "controllers/boxes-controller";
+import * as EscrowController from "controllers/escrow-controller";
+import * as NotificationController from "controllers/notification-controller";
 
-import verifyToken from "../middleware/verifyToken";
-import filesValidator from "../middleware/filesValidator";
-import asyncHandler from "../utils/asyncHandler";
+import verifyToken from "middleware/verifyToken";
+import filesValidator from "middleware/filesValidator";
+import asyncHandler from "utils/asyncHandler";
 
-import { upload } from "../config/multerConfig";
-import BoxesController from "../controllers/boxes-controller";
+import { upload } from "config/multerConfig";
 
 const router = Router();
 
@@ -147,6 +149,78 @@ router.post(
   asyncHandler(verifyToken),
   upload.single("file"),
   asyncHandler(FilesController.transferFile)
+);
+// =====================================================================
+// Escrow
+router.post(
+  "/escrow/create",
+  asyncHandler(verifyToken),
+  upload.any(),
+  asyncHandler(EscrowController.createEscrow)
+);
+
+router.post(
+  "/escrow/finalise-withdraw-declined-funds",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.finaliseWithdrawDeclinedFunds)
+);
+
+router.post(
+  "/escrow/cancel",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.cancelEscrow)
+);
+
+router.post(
+  "/escrow/expire",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.expireEscrow)
+);
+
+router.post(
+  "/escrow/finalize",
+  asyncHandler(verifyToken),
+  upload.any(),
+  asyncHandler(EscrowController.finalizeEscrow)
+);
+
+router.get(
+  "/escrow/history",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.getHistory)
+);
+
+router.get(
+  "/escrow/active",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.getActiveEscrows)
+);
+
+router.get(
+  "/escrow/proposed",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.getProposedEscrows)
+);
+
+router.get(
+  "/escrow/single",
+  asyncHandler(verifyToken),
+  asyncHandler(EscrowController.getSingleEscrow)
+);
+
+// =====================================================================
+// Notification
+
+router.post(
+  "/notifications/view",
+  asyncHandler(verifyToken),
+  asyncHandler(NotificationController.viewNotification)
+);
+
+router.get(
+  "/notifications",
+  asyncHandler(verifyToken),
+  asyncHandler(NotificationController.getNotifications)
 );
 
 export default router;

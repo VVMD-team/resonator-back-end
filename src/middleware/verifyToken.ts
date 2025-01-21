@@ -1,6 +1,6 @@
 import { Response, NextFunction } from "express";
-import { AuthRequest } from "../custom-types/AuthRequest";
-import { getIdTokenFromCustomToken, decodeIdToken } from "../utils/authToken";
+import { AuthRequest } from "custom-types/AuthRequest";
+import { getIdTokenFromCustomToken, decodeIdToken } from "utils/authToken";
 
 const verifyToken = async (
   req: AuthRequest,

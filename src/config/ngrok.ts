@@ -1,4 +1,4 @@
-import { PORT } from "../constants";
+import { PORT } from "const";
 
 const ngrokConfig = {
   addr: PORT,

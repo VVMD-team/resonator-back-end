@@ -1,15 +1,16 @@
-import { BOX_TYPES, COLLECTIONS } from "../enums";
+import { BOX_TYPES, COLLECTIONS } from "enums";
 import { getUserById, getUserByPublicKey } from "./user";
-import { db } from "../config/firebase";
-import { File } from "../custom-types/File";
-import { Box } from "../custom-types/Box";
-import { admin } from "../config/firebase";
+import { db } from "config/firebase";
+import { File } from "custom-types/File";
+import { Box } from "custom-types/Box";
 
 import { updateBoxSize } from "./box";
 import {
   deleteFileFromStorage,
   uploadFileToStorage,
-} from "../firebase-storage/file";
+} from "firebase-storage/file";
+
+import { ESCROW_FILE_STATUSES } from "enums";
 
 export const setFiles = async (files: File[]) => {
   const collectionRef = db.collection(COLLECTIONS.files);
@@ -66,17 +67,10 @@ export const getFiles = async (userId: string) => {
       return [];
     }
 
-    const files = filesSnapshot.docs
-      .map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as File),
-      }))
-      .map((file) => ({
-        id: file.id,
-        name: file.name,
-        size: file.size,
-        mimetype: file.mimetype,
-      }));
+    const files = filesSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as File),
+    }));
 
     return files;
   } catch (error) {
@@ -103,6 +97,27 @@ export const getFileById = async (fileId: string) => {
   }
 };
 
+export const getFileByContractFileId = async (fileContractId: string) => {
+  try {
+    const fileQuery = await db
+      .collection(COLLECTIONS.files)
+      .where("fileContractId", "==", fileContractId)
+      .get();
+
+    if (fileQuery.empty) {
+      console.error("Can not find file by fileContractId: ", fileContractId);
+      throw new Error("Can not find file by fileContractId");
+    }
+
+    const fileDoc = fileQuery.docs[0];
+    const fileData = fileDoc.data() as File;
+
+    return { ...fileData, id: fileDoc.id };
+  } catch (error) {
+    throw new Error(`Something went wrong with getting file. Error: ${error}`);
+  }
+};
+
 export const deleteFileById = async (fileId: string, userId: string) => {
   try {
     const fileRef = db.collection(COLLECTIONS.files).doc(fileId);
@@ -114,7 +129,10 @@ export const deleteFileById = async (fileId: string, userId: string) => {
 
     const file = fileDoc.data() as File;
 
-    if (!file.ownerIds.includes(userId)) {
+    if (
+      !file.ownerIds.includes(userId) ||
+      file.escrowFileStatus === ESCROW_FILE_STATUSES.on_sell
+    ) {
       throw new Error("Cannot delete file.");
     }
 
@@ -160,7 +178,7 @@ export const getLastUploaded = async (userId: string) => {
 
   const files = filesSnapshot.docs.map((doc) => ({
     id: doc.id,
-    ...doc.data(),
+    ...(doc.data() as File),
   }));
 
   return files;
@@ -252,16 +270,26 @@ export const shareFileToAnotherUser = async (
   await updateBoxSize(sharedBoxId);
 };
 
-export const transferFileToAnotherUser = async (
-  currentUserId: string,
-  walletPublicKey: string,
-  fileId: string,
-  fileBuffer?: Buffer,
-  sharedKey?: string
-) => {
-  const sharedUserData = await getUserByPublicKey(walletPublicKey);
+type TransferFileToAnotherUserData = {
+  senderUserId: string;
+  recipientWalletPublicKey: string;
+  fileId: string;
+  transferBoxType?: BOX_TYPES;
+  fileBuffer?: Buffer;
+  sharedKey?: string;
+};
 
-  const currentUser = await getUserById(currentUserId);
+export const transferFileToAnotherUser = async ({
+  senderUserId,
+  recipientWalletPublicKey,
+  fileId,
+  transferBoxType = BOX_TYPES.transfered,
+  fileBuffer,
+  sharedKey,
+}: TransferFileToAnotherUserData) => {
+  const sharedUserData = await getUserByPublicKey(recipientWalletPublicKey);
+
+  const currentUser = await getUserById(senderUserId);
 
   if (!currentUser) {
     throw new Error("User not found");
@@ -274,7 +302,7 @@ export const transferFileToAnotherUser = async (
   const transferedBoxId = await Promise.all(
     sharedUserData.boxIds.map(async (boxId) => {
       const boxDoc = await db.collection(COLLECTIONS.boxes).doc(boxId).get();
-      return boxDoc.exists && boxDoc.data()?.type === BOX_TYPES.transfered
+      return boxDoc.exists && boxDoc.data()?.type === transferBoxType
         ? boxId
         : null;
     })
@@ -290,12 +318,14 @@ export const transferFileToAnotherUser = async (
     throw new Error("File not found");
   }
 
-  if (!sharedKey && !existedFile?.sharedKey) {
-    throw new Error("Shared key is required");
-  }
-
-  if (sharedKey && !fileBuffer) {
-    throw new Error("File is required");
+  if (!existedFile.sharedKey) {
+    if (sharedKey) {
+      if (!fileBuffer) {
+        throw new Error("File is required");
+      }
+    } else {
+      throw new Error("Shared key is required");
+    }
   }
 
   const transferedBoxDoc = await db
@@ -349,10 +379,10 @@ export const transferFileToAnotherUser = async (
     createdAt: existedFile.createdAt,
     fileTransactionHash: existedFile.fileTransactionHash,
     ownerIds: [
-      ...existedFile.ownerIds.filter((id) => id !== currentUserId),
+      ...existedFile.ownerIds.filter((id) => id !== senderUserId),
       sharedUserData.id,
     ],
-    sharedKey,
+    ...(sharedKey && { sharedKey }),
   });
 
   await db
@@ -363,113 +393,20 @@ export const transferFileToAnotherUser = async (
   await updateBoxSize(transferedBoxId);
 };
 
-export const moveFileToSharedBox = async (userId: string, fileId: string) => {
-  try {
-    const userRef = db.collection(COLLECTIONS.users).doc(userId);
-    const userSnapshot = await userRef.get();
-
-    if (!userSnapshot.exists) {
-      throw new Error("User not found");
-    }
-
-    const userData = userSnapshot.data();
-    if (!userData || !userData.boxIds) {
-      throw new Error("User has no boxes");
-    }
-
-    const boxIds: string[] = userData.boxIds;
-    const boxSnapshots = await db
-      .collection(COLLECTIONS.boxes)
-      .where(admin.firestore.FieldPath.documentId(), "in", boxIds)
-      .where("type", "==", BOX_TYPES.shared)
-      .get();
-
-    if (boxSnapshots.empty) {
-      throw new Error("No shared box found for user");
-    }
-
-    const sharedBoxRef = boxSnapshots.docs[0].ref;
-    const sharedBoxData = boxSnapshots.docs[0].data();
-
-    const fileIds: string[] = sharedBoxData.fileIds || [];
-    if (!fileIds.includes(fileId)) {
-      fileIds.push(fileId);
-
-      await sharedBoxRef.update({ fileIds });
-      console.log(`File ${fileId} was added to shared box for user ${userId}`);
-    } else {
-      console.log(
-        `File ${fileId} is already in the shared box for user ${userId}`
-      );
-    }
-  } catch (error) {
-    throw new Error("Error adding file to shared box: " + error);
-  }
+type ChangeFileEscrowStatusProps = {
+  fileId: string;
+  escrowFileStatus: ESCROW_FILE_STATUSES;
 };
+export const changeFileEscrowStatus = async ({
+  fileId,
+  escrowFileStatus,
+}: ChangeFileEscrowStatusProps) => {
+  const fileRef = db.collection(COLLECTIONS.files).doc(fileId);
+  const fileDoc = await fileRef.get();
 
-export const moveFileToTransferedBox = async (
-  userId: string,
-  fileId: string
-) => {
-  try {
-    const userRef = db.collection(COLLECTIONS.users).doc(userId);
-    const userSnapshot = await userRef.get();
-
-    if (!userSnapshot.exists) {
-      throw new Error("User not found");
-    }
-
-    const userData = userSnapshot.data();
-    if (!userData || !userData.boxIds) {
-      throw new Error("User has no boxes");
-    }
-
-    const boxIds: string[] = userData.boxIds;
-
-    const currentBoxSnapshots = await db
-      .collection("boxes")
-      .where(admin.firestore.FieldPath.documentId(), "in", boxIds)
-      .where("fileIds", "array-contains", fileId)
-      .get();
-
-    if (!currentBoxSnapshots.empty) {
-      const currentBoxRef = currentBoxSnapshots.docs[0].ref;
-      const currentFileIds: string[] =
-        currentBoxSnapshots.docs[0].data().fileIds || [];
-
-      const updatedFileIds = currentFileIds.filter((id) => id !== fileId);
-      await currentBoxRef.update({ fileIds: updatedFileIds });
-      console.log(
-        `File ${fileId} removed from its current box for user ${userId}`
-      );
-    }
-
-    const transferedBoxSnapshots = await db
-      .collection("boxes")
-      .where(admin.firestore.FieldPath.documentId(), "in", boxIds)
-      .where("type", "==", BOX_TYPES.transfered)
-      .get();
-
-    if (transferedBoxSnapshots.empty) {
-      throw new Error("No transfered box found for user");
-    }
-
-    const transferedBoxRef = transferedBoxSnapshots.docs[0].ref;
-    const transferedFileIds: string[] =
-      transferedBoxSnapshots.docs[0].data().fileIds || [];
-
-    if (!transferedFileIds.includes(fileId)) {
-      transferedFileIds.push(fileId);
-      await transferedBoxRef.update({ fileIds: transferedFileIds });
-      console.log(
-        `File ${fileId} was added to transfered box for user ${userId}`
-      );
-    } else {
-      console.log(
-        `File ${fileId} is already in the transfered box for user ${userId}`
-      );
-    }
-  } catch (error) {
-    throw new Error("Error moving file to transfered box: " + error);
+  if (!fileDoc.exists) {
+    throw new Error(`File with id: ${fileId} not exist`);
   }
+
+  await fileRef.update({ escrowFileStatus });
 };

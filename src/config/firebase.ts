@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import admin from "firebase-admin";
-import { firebaseConfig, databaseURL, serviceAccount } from "../constants";
+import { firebaseConfig, databaseURL, serviceAccount } from "const";
 import { getAuth, signOut, signInWithCustomToken, Auth } from "firebase/auth";
 import { Firestore } from "firebase-admin/firestore";
 import { getStorage, Storage } from "firebase-admin/storage";
