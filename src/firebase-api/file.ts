@@ -10,6 +10,8 @@ import {
   uploadFileToStorage,
 } from "firebase-storage/file";
 
+import { ESCROW_FILE_STATUSES } from "enums";
+
 export const setFiles = async (files: File[]) => {
   const collectionRef = db.collection(COLLECTIONS.files);
   try {
@@ -127,7 +129,10 @@ export const deleteFileById = async (fileId: string, userId: string) => {
 
     const file = fileDoc.data() as File;
 
-    if (!file.ownerIds.includes(userId)) {
+    if (
+      !file.ownerIds.includes(userId) ||
+      file.escrowFileStatus === ESCROW_FILE_STATUSES.on_sell
+    ) {
       throw new Error("Cannot delete file.");
     }
 
@@ -386,4 +391,22 @@ export const transferFileToAnotherUser = async ({
     .update({ fileIds: [...transferedFileIds, existedFile.id] });
 
   await updateBoxSize(transferedBoxId);
+};
+
+type ChangeFileEscrowStatusProps = {
+  fileId: string;
+  escrowFileStatus: ESCROW_FILE_STATUSES;
+};
+export const changeFileEscrowStatus = async ({
+  fileId,
+  escrowFileStatus,
+}: ChangeFileEscrowStatusProps) => {
+  const fileRef = db.collection(COLLECTIONS.files).doc(fileId);
+  const fileDoc = await fileRef.get();
+
+  if (!fileDoc.exists) {
+    throw new Error(`File with id: ${fileId} not exist`);
+  }
+
+  await fileRef.update({ escrowFileStatus });
 };

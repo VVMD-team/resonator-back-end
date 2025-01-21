@@ -6,6 +6,7 @@ import { escrowFinalizeSchema } from "schemas";
 import {
   getFileByContractFileId,
   transferFileToAnotherUser,
+  changeFileEscrowStatus,
 } from "firebase-api/file";
 
 import {
@@ -113,6 +114,11 @@ export default async function finalizeEscrow(
           transferBoxType: BOX_TYPES.files_bought,
         });
 
+        await changeFileEscrowStatus({
+          fileId: fi_to_fu_owners_file.id,
+          escrowFileStatus: ESCROW_FILE_STATUSES.sold,
+        });
+
         await updateEscrowById({
           escrowId,
           status: ESCROW_STATUSES.completed,
@@ -195,6 +201,11 @@ export default async function finalizeEscrow(
           recipientWalletPublicKey: escrowFileToFile.counterpartyAddress,
           fileId: fi_to_fi_owners_file.id,
           transferBoxType: BOX_TYPES.files_bought,
+        });
+
+        await changeFileEscrowStatus({
+          fileId: fi_to_fi_owners_file.id,
+          escrowFileStatus: ESCROW_FILE_STATUSES.sold,
         });
 
         // Send file from counterparty to owner
