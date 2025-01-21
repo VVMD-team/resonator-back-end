@@ -14,7 +14,6 @@ import { bytesToMB } from "helpers/sizeConvert";
 
 export const startHttpServer = () => {
   const app = express();
-
   app.use(
     cors({
       origin: (
