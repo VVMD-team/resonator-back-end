@@ -7,7 +7,8 @@ export const whitelist = [
   "https://escrow.rsntr.io",
   "https://resonator.ngrok.io",
   "https://dapp.rsntr.io",
-  "https://resonator-front-eqw9lhkij-vvmd.vercel.app/",
+  "https://resonator-front-eqw9lhkij-vvmd.vercel.app",
+  "https://resonator-front-end.vercel.app",
 ];
 
 const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
