@@ -5,10 +5,9 @@ export const isProduction = enviroment === "production";
 export const PORT = process.env.PORT;
 export const whitelist = [
   "https://escrow.rsntr.io",
-  "http://localhost:3000",
   "https://resonator.ngrok.io",
   "https://dapp.rsntr.io",
-  "https://resonator-front-eqw9lhkij-vvmd.vercel.app",
+  "https://resonator-front-eqw9lhkij-vvmd.vercel.app/",
 ];
 
 const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
