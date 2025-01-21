@@ -21,6 +21,7 @@ export default async function deleteFile(
     const userId = req.userId as string;
 
     const boxesWithCurrentFile = await getBoxesWithFile(fileId);
+
     await deleteFileById(fileId, userId);
 
     for (const boxId of boxesWithCurrentFile) {
