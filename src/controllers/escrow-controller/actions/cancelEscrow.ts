@@ -2,6 +2,10 @@ import { Response, NextFunction } from "express";
 import { AuthRequest } from "custom-types/AuthRequest";
 
 import {
+  changeFileEscrowStatus,
+  getFileByContractFileId,
+} from "firebase-api/file";
+import {
   checkIsCounterparty,
   checkIsOwner,
   cancelEscrowByCounterparty,
@@ -9,6 +13,8 @@ import {
 } from "firebase-api/escrow";
 
 import createAndSendEscrowNotificationsToParticipants from "utils/escrow/createAndSendEscrowNotificationsToParticipants";
+
+import { ESCROW_FILE_STATUSES, ESCROW_DEALS } from "enums/index";
 
 export default async function cancelEscrow(
   req: AuthRequest,
@@ -54,6 +60,20 @@ export default async function cancelEscrow(
         escrowName: escrow.name,
         escrowStatus: status,
       });
+
+      if (
+        escrow.dealType === ESCROW_DEALS.file_to_file ||
+        escrow.dealType === ESCROW_DEALS.file_to_funds
+      ) {
+        const file = await getFileByContractFileId(
+          escrow.ownerData.fileContractId
+        );
+
+        await changeFileEscrowStatus({
+          fileId: file.id,
+          escrowFileStatus: ESCROW_FILE_STATUSES.cancelled,
+        });
+      }
 
       return res.status(200).send({ status });
     }

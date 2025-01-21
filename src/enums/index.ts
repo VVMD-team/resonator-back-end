@@ -68,6 +68,7 @@ export enum ESCROW_STATUSES {
 export enum ESCROW_FILE_STATUSES {
   on_sell = "on_sell",
   sold = "sold",
+  cancelled = "cancelled",
 }
 
 export enum NOTIFICATION_TYPES {
