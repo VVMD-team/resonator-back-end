@@ -258,6 +258,8 @@ export default async function finalizeEscrow(
       return res.status(400).json(formatYupError(error));
     }
 
+    console.error("finalizeEscrow error: ", error);
+
     next(error);
   }
 }
