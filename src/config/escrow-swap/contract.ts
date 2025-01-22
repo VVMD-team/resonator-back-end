@@ -4,7 +4,7 @@ import { ethers } from "ethers";
 import abi from "./abi";
 
 const testnetUrl = "https://data-seed-prebsc-1-s1.binance.org:8545/"; // BSC testnet
-const mainnetUrl = "https://eth.llamarpc.com";
+const mainnetUrl = "https://eth.llamarpc.com"; // Etherium mainnet
 const url = isProduction ? mainnetUrl : testnetUrl;
 
 const provider = new ethers.JsonRpcProvider(url);
