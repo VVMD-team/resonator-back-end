@@ -16,6 +16,12 @@ export default async function getWalletBalance(
   walletAddress: string,
   currency: WALLET_BALANCE_CURRRENCIES
 ) {
+  if (currency === WALLET_BALANCE_CURRRENCIES.ETH) {
+    const balance = await infuraProvider.getBalance(walletAddress);
+    const balanceFormatted = ethers.formatUnits(balance, 18);
+    return Number(balanceFormatted);
+  }
+
   const contract = new ethers.Contract(
     walletBalanceContractsMap[currency],
     abi,

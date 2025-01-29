@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import helmet from "helmet";
 
 import * as ngrok from "@ngrok/ngrok";
 import cors from "cors";
@@ -14,6 +15,19 @@ import { bytesToMB } from "helpers/sizeConvert";
 
 export const startHttpServer = () => {
   const app = express();
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "https://trusted-scripts.com"],
+          objectSrc: ["'none'"],
+        },
+      },
+      referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    })
+  );
 
   app.use(
     cors({
@@ -33,16 +47,6 @@ export const startHttpServer = () => {
 
   app.use(express.json({ limit: `${bytesToMB(MAX_FILE_SIZE_BYTES)}mb` }));
   app.use(cookieParser());
-
-  app.use((req, res, next) => {
-    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader(
-      "Content-Security-Policy",
-      "default-src 'self'; script-src 'self' https://trusted-scripts.com; object-src 'none';"
-    );
-    next();
-  });
 
   app.get("/", (req: Request, res: Response) => {
     res.send("Dapp Resonator Back End.");
