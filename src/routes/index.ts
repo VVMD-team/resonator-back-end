@@ -17,7 +17,7 @@ import { upload } from "config/multerConfig";
 const router = Router();
 
 // =====================================================================
-// Files Upload
+// Files
 router.post(
   "/upload-files",
   asyncHandler(verifyToken),
@@ -62,11 +62,6 @@ router.get(
   asyncHandler(UserController.getUserData)
 );
 
-router.get(
-  "/user/balance",
-  asyncHandler(verifyToken),
-  asyncHandler(UserController.getTokenBalance)
-);
 // =====================================================================
 // Box
 router.post(

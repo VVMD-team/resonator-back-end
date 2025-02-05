@@ -15,14 +15,6 @@ export enum WALLETS {
   RABBY_WALLET = "RABBY_WALLET",
 }
 
-export enum WALLET_BALANCE_CURRRENCIES {
-  RSN = "RSN",
-  ETH = "ETH",
-  WBTC = "WBTC",
-  USDT = "USDT",
-  USDC = "USDC",
-}
-
 export enum BOX_TYPES {
   custom = "custom",
   shared = "shared",
@@ -41,9 +33,17 @@ export enum ESCROW_DEALS {
 
 enum ProdCurrencies {
   ETH = "ETH",
+  RSN = "RSN",
+  WBTC = "WBTC",
   USDT = "USDT",
   USDC = "USDC",
-  WBTC = "WBTC",
+  INFRA = "INFRA",
+  M87 = "M87",
+  VERTAI = "VERTAI",
+  BERRY = "BERRY",
+  ALVA = "ALVA",
+  QF = "QF",
+  SYNK = "SYNK",
 }
 enum DevCurrencies {
   ETH = "ETH",
