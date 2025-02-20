@@ -22,6 +22,13 @@ export default async function createEscrow(
 ) {
   try {
     const {
+      fileEncryptedIvBase64,
+      fileEncryptedAesKeys: fileEncryptedAesKeysField,
+      fileSenderPublicKeyHex,
+      fileOriginalName,
+      fileMimeType,
+
+      fileContractId,
       contractOrderHash,
       name,
       description,
@@ -32,18 +39,14 @@ export default async function createEscrow(
       counterpartyFileContractId,
       // counterpartyFileName,
     } = req.body;
-    const counterpartyAddressFormatted = counterpartyAddress.toLowerCase();
-
+    const fileEncryptedAesKeys =
+      fileEncryptedAesKeysField && JSON.parse(fileEncryptedAesKeysField);
     const requestedPayment =
       requestedPaymentField && JSON.parse(requestedPaymentField);
     const providedPayment =
       providedPaymentField && JSON.parse(providedPaymentField);
 
-    const fileData = req.body.files?.[0];
-    const fileOriginalName = fileData?.fileOriginalName;
-    const fileMimeType = fileData?.fileMimeType;
-    const fileContractId = fileData?.fileContractId;
-    const fileSharedKey = fileData?.fileSharedKey;
+    const counterpartyAddressFormatted = counterpartyAddress.toLowerCase();
 
     const payload = {
       contractOrderHash,
@@ -56,10 +59,12 @@ export default async function createEscrow(
       ...(requestedPayment && { requestedPayment }),
       ...(providedPayment && { providedPayment }),
 
+      ...(fileEncryptedIvBase64 && { fileEncryptedIvBase64 }),
+      ...(fileEncryptedAesKeys && { fileEncryptedAesKeys }),
+      ...(fileSenderPublicKeyHex && { fileSenderPublicKeyHex }),
       ...(fileOriginalName && { fileOriginalName }),
       ...(fileMimeType && { fileMimeType }),
       ...(fileContractId && { fileContractId }),
-      ...(fileSharedKey && { fileSharedKey }),
     };
     await escrowCreateSchema.validate(payload);
 
@@ -87,21 +92,25 @@ export default async function createEscrow(
       dealType === ESCROW_DEALS.file_to_funds ||
       dealType === ESCROW_DEALS.file_to_file
     ) {
-      const files = req.files as Express.Multer.File[];
-      const file = files[0];
+      const encryptedFile = req.file
+        ? (req.file as Express.Multer.File)
+        : undefined;
 
-      if (!file) {
-        return res.status(400).json({ error: "No file provided." });
+      if (!encryptedFile) {
+        return res.status(400).send({ message: "File is required" });
       }
 
       const ownersFile = await uploadEscrowFile({
         userId,
-        file,
+        file: encryptedFile,
         fileMimeType,
         fileOriginalName,
         fileContractId,
-        sharedKey: fileSharedKey,
         fileStatus: ESCROW_FILE_STATUSES.on_sell,
+
+        encryptedIvBase64: fileEncryptedIvBase64,
+        encryptedAesKeys: fileEncryptedAesKeys,
+        senderPublicKeyHex: fileSenderPublicKeyHex,
       });
 
       createEscrowData.ownersfileContractId = ownersFile.fileContractId;

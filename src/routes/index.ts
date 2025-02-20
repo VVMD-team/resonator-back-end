@@ -1,15 +1,13 @@
-// src/routes/index.ts
 import { Router } from "express";
 
-import AuthController from "controllers/auth-controller";
+import * as AuthController from "controllers/auth-controller";
 import * as FilesController from "controllers/files-controller";
 import * as UserController from "controllers/user-controller";
-import BoxesController from "controllers/boxes-controller";
+import * as BoxesController from "controllers/boxes-controller";
 import * as EscrowController from "controllers/escrow-controller";
 import * as NotificationController from "controllers/notification-controller";
 
 import verifyToken from "middleware/verifyToken";
-import filesValidator from "middleware/filesValidator";
 import asyncHandler from "utils/asyncHandler";
 
 import { upload } from "config/multerConfig";
@@ -19,22 +17,14 @@ const router = Router();
 // =====================================================================
 // Files
 router.post(
-  "/upload-files",
-  asyncHandler(verifyToken),
-  upload.any(),
-  filesValidator,
-  asyncHandler(FilesController.uploadFiles)
-);
-
-router.post(
-  "/encrypt-file",
+  "/upload-file",
   asyncHandler(verifyToken),
   upload.single("file"),
-  asyncHandler(FilesController.encryptFile)
+  asyncHandler(FilesController.uploadFile)
 );
 
 router.post(
-  "/decrypt-file",
+  "/decrypt-file-old",
   asyncHandler(verifyToken),
   upload.any(),
   asyncHandler(FilesController.decryptFile)
@@ -60,6 +50,18 @@ router.get(
   "/user",
   asyncHandler(verifyToken),
   asyncHandler(UserController.getUserData)
+);
+
+router.get(
+  "/user/custom-pub-key",
+  asyncHandler(verifyToken),
+  asyncHandler(UserController.getUserCustomPubKey)
+);
+
+router.post(
+  "/user/add-custom-key-pair",
+  asyncHandler(verifyToken),
+  asyncHandler(UserController.addCustomKeyPair)
 );
 
 // =====================================================================
@@ -126,10 +128,22 @@ router.get(
   asyncHandler(FilesController.getFile)
 );
 
+router.get(
+  "/files/file-encrypted-data",
+  asyncHandler(verifyToken),
+  asyncHandler(FilesController.getFileEncryptedData)
+);
+
 router.delete(
   "/files/delete",
   asyncHandler(verifyToken),
   asyncHandler(FilesController.deleteFile)
+);
+
+router.delete(
+  "/files/remove-owner",
+  asyncHandler(verifyToken),
+  asyncHandler(FilesController.removeFileOwner)
 );
 
 router.post(
@@ -150,7 +164,7 @@ router.post(
 router.post(
   "/escrow/create",
   asyncHandler(verifyToken),
-  upload.any(),
+  upload.single("file"),
   asyncHandler(EscrowController.createEscrow)
 );
 
@@ -175,7 +189,7 @@ router.post(
 router.post(
   "/escrow/finalize",
   asyncHandler(verifyToken),
-  upload.any(),
+  upload.single("file"),
   asyncHandler(EscrowController.finalizeEscrow)
 );
 

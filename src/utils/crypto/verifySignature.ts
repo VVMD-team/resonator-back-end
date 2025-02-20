@@ -1,7 +1,7 @@
 import nacl from "tweetnacl";
 import bs58 from "bs58";
 
-import { WALLETS } from "../../enums";
+import { WALLETS } from "enums";
 import { recoverMessageAddress } from "viem";
 export default async function verifySignature(
   message: string,

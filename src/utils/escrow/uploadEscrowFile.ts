@@ -2,6 +2,7 @@ import { getBoxesByUserIdAndType } from "firebase-api/box";
 import { uploadFileSingle } from "utils/file/uploadFile";
 
 import { BOX_TYPES, ESCROW_FILE_STATUSES } from "enums";
+import { Base64String } from "custom-types/helpers";
 
 type UploadEscrowFileData = {
   userId: string;
@@ -9,8 +10,11 @@ type UploadEscrowFileData = {
   fileMimeType: string;
   fileOriginalName: string;
   fileContractId: string;
-  sharedKey: string;
   fileStatus: ESCROW_FILE_STATUSES;
+
+  encryptedIvBase64: Base64String;
+  encryptedAesKeys: Record<string, Base64String>;
+  senderPublicKeyHex: string;
 };
 
 export default async function uploadEscrowFile({
@@ -19,8 +23,11 @@ export default async function uploadEscrowFile({
   fileMimeType,
   fileOriginalName,
   fileContractId,
-  sharedKey,
   fileStatus,
+
+  encryptedIvBase64,
+  encryptedAesKeys,
+  senderPublicKeyHex,
 }: UploadEscrowFileData) {
   const filesForSellBoxes = await getBoxesByUserIdAndType(
     userId,
@@ -43,16 +50,16 @@ export default async function uploadEscrowFile({
 
   const addedFile = await uploadFileSingle({
     file,
-    fileRequestData: {
-      mimetype: fileMimeType,
-      originalName: fileOriginalName,
-    },
+    originalName: fileOriginalName,
+    mimeType: fileMimeType,
     userId,
     isCheckSize: false,
+    encryptedIvBase64,
+    encryptedAesKeys,
+    senderPublicKeyHex,
     boxId: filesForSellBoxId,
     escrowFileStatus: fileStatus,
     fileContractId,
-    sharedKey,
   });
 
   return addedFile;
