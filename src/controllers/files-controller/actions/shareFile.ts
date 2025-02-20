@@ -1,6 +1,10 @@
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "custom-types/AuthRequest";
 import { shareFileToAnotherUser, checkIsUsersFile } from "firebase-api/file";
+import { shareTransferFileSchema } from "schemas";
+
+import { ValidationError } from "yup";
+import formatYupError from "helpers/yup/formatYupError";
 
 export default async function shareFile(
   req: AuthRequest,
@@ -8,40 +12,67 @@ export default async function shareFile(
   next: NextFunction
 ) {
   try {
-    const file = req.file ? (req.file as Express.Multer.File) : undefined;
+    const recryptedFile = req.file
+      ? (req.file as Express.Multer.File)
+      : undefined;
 
-    const { walletPublicKey, fileId, sharedKey = "" } = req.body;
-
-    if (!walletPublicKey || !fileId) {
-      return res.status(400).send({
-        message: "walletPublicKey, fileId are required fields",
-      });
+    if (!recryptedFile) {
+      return res.status(400).send({ message: "File is required" });
     }
+
+    const {
+      recipientWalletPublicKey,
+      fileId,
+      encryptedIvBase64,
+      encryptedAesKeys: encryptedAesKeysField,
+      senderPublicKeyHex,
+    } = req.body;
+
+    let encryptedAesKeys;
+    try {
+      encryptedAesKeys = JSON.parse(encryptedAesKeysField);
+    } catch (error) {
+      return res.status(400).send({ message: "Invalid Encrypted Aes Keys" });
+    }
+
+    const payload = {
+      recipientWalletPublicKey,
+      fileId,
+      encryptedIvBase64,
+      encryptedAesKeys,
+      senderPublicKeyHex,
+    };
+    await shareTransferFileSchema.validate(payload);
 
     const userId = req.userId as string;
 
     const isUsersFile = await checkIsUsersFile(fileId, userId);
 
     if (!isUsersFile) {
-      console.error(
-        `File does not belong to user. fileId: ${fileId}, userId: ${userId}`
-      );
       res
         .status(500)
         .send({ result: false, message: "Something went wrong..." });
     }
 
-    const walletPublicKeyInLowerCase = walletPublicKey.trim().toLowerCase();
+    const recipientWalletPublicKeyInLowerCase = recipientWalletPublicKey
+      .trim()
+      .toLowerCase();
 
-    await shareFileToAnotherUser(
-      walletPublicKeyInLowerCase,
+    await shareFileToAnotherUser({
+      recipientWalletPublicKey: recipientWalletPublicKeyInLowerCase,
       fileId,
-      file?.buffer,
-      sharedKey
-    );
+      fileBuffer: recryptedFile.buffer,
+      encryptedIvBase64,
+      encryptedAesKeys,
+      senderPublicKeyHex,
+    });
 
     return res.status(200).send({ result: true });
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(formatYupError(error));
+    }
+
     next(error);
   }
 }

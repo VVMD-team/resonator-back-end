@@ -28,6 +28,10 @@ export default async function decryptFile(
       throw new Error(`File with fileId: ${fileId} not found`);
     }
 
+    if (!file.publicUrl) {
+      throw new Error(`publicUrl is reqired!`);
+    }
+
     const encryptedArrayBuffer = await fetchFileFromPublicUrl(file.publicUrl);
 
     if (!encryptedArrayBuffer) {

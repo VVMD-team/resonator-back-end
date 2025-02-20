@@ -8,11 +8,11 @@
       "custom-types/*": ["custom-types/*"],
       "enums/*": ["enums/*"],
       "firebase-api/*": ["firebase-api/*"],
-      "firebase-storage/*": ["firebase-storage/*"],
       "helpers/*": ["helpers/*"],
       "maps/*": ["maps/*"],
       "middleware/*": ["middleware/*"],
       "schemas/*": ["schemas/*"],
+      "storage/*": ["storage/*"],
       "utils/*": ["utils/*"]
     },
     "moduleResolution": "node",

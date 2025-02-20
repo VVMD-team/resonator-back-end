@@ -2,6 +2,7 @@ import { object, string, mixed } from "yup";
 import { ESCROW_DEALS, currencyValues } from "enums";
 
 import enumsValidator from "helpers/yup/enumsValidator";
+import { base64Regex, base64RecordTestCallback } from "./global";
 
 const maxDecimals = 3;
 const maxIntegers = 6;
@@ -58,18 +59,44 @@ const escrowCreateSchema = object().shape({
   counterpartyAddress: string().required().label("Counterparty Adress"),
   dealType: enumsValidator(ESCROW_DEALS).required().label("Deal type"),
 
+  fileEncryptedIvBase64: string()
+    .when("dealType", checkIsRequiredDealType_file_to)
+    .matches(base64Regex, "Invalid Base64 string")
+    .label("Encrypted IV"),
+  fileEncryptedAesKeys: object()
+    .when("dealType", {
+      is: (dealType: ESCROW_DEALS) =>
+        [ESCROW_DEALS.file_to_funds, ESCROW_DEALS.file_to_file].includes(
+          dealType
+        ),
+      then: (schema) =>
+        schema
+          .required("Encrypted Aes Keys are required")
+          .test(
+            "is-base64-record",
+            "All values must be valid Base64 strings",
+            base64RecordTestCallback
+          )
+          .test(
+            "is-not-empty",
+            "Encrypted Aes Keys cannot be empty",
+            (value) => Object.keys(value || {}).length > 0
+          ),
+      otherwise: (schema) => schema.notRequired(),
+    })
+    .label("Encrypted Aes Keys"),
+  fileSenderPublicKeyHex: string()
+    .when("dealType", checkIsRequiredDealType_file_to)
+    .label("Sender Public Key"),
   fileOriginalName: string()
     .when("dealType", checkIsRequiredDealType_file_to)
     .label("File Original Name"),
-  fileContractId: string()
-    .when("dealType", checkIsRequiredDealType_file_to)
-    .label("Contract File Id"),
   fileMimeType: string()
     .when("dealType", checkIsRequiredDealType_file_to)
     .label("File mime Type"),
-  fileSharedKey: string()
+  fileContractId: string()
     .when("dealType", checkIsRequiredDealType_file_to)
-    .label("File Shared Key"),
+    .label("Contract File Id"),
 
   // counterpartyFileName: string()
   //   .when("dealType", ([dealType], schema) => {
