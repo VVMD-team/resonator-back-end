@@ -27,7 +27,7 @@ const escrowFinalizeSchema = object().shape({
   fileEncryptedAesKeys: object()
     .when("dealType", {
       is: (dealType: ESCROW_DEALS) =>
-        [ESCROW_DEALS.file_to_funds, ESCROW_DEALS.file_to_file].includes(
+        [ESCROW_DEALS.funds_to_file, ESCROW_DEALS.file_to_file].includes(
           dealType
         ),
       then: (schema) =>
