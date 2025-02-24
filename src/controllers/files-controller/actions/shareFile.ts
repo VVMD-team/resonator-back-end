@@ -6,6 +6,8 @@ import { shareTransferFileSchema } from "schemas";
 import { ValidationError } from "yup";
 import formatYupError from "helpers/yup/formatYupError";
 
+import { mapFileToDTO } from "utils/file/mappers";
+
 export default async function shareFile(
   req: AuthRequest,
   res: Response,
@@ -58,7 +60,7 @@ export default async function shareFile(
       .trim()
       .toLowerCase();
 
-    await shareFileToAnotherUser({
+    const sharedFile = await shareFileToAnotherUser({
       recipientWalletPublicKey: recipientWalletPublicKeyInLowerCase,
       fileId,
       fileBuffer: recryptedFile.buffer,
@@ -67,7 +69,9 @@ export default async function shareFile(
       senderPublicKeyHex,
     });
 
-    return res.status(200).send({ result: true });
+    const sharedFileDTO = mapFileToDTO(sharedFile);
+
+    return res.status(200).send({ sharedFile: sharedFileDTO, result: true });
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(formatYupError(error));
