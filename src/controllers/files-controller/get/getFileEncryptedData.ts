@@ -4,6 +4,8 @@ import { AuthRequest } from "custom-types/AuthRequest";
 import { getFileFromStorage } from "storage/pinata";
 import { getFileById } from "firebase-api/file";
 
+import { encodeRFC5987ValueChars } from "helpers/encodeRFC5987ValueChars";
+
 export default async function getFileEncryptedData(
   req: AuthRequest,
   res: Response,
@@ -48,7 +50,7 @@ export default async function getFileEncryptedData(
       res.setHeader("Content-Type", fileData.contentType);
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename="${file.name}"`
+        `attachment; filename*=UTF-8''${encodeRFC5987ValueChars(file.name)}`
       );
       res.setHeader("Content-Length", buffer.length.toString());
     }
