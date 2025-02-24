@@ -22,8 +22,13 @@ export default function mapFileToDTO(
 
   return {
     ...fileShort,
+    ownerIds: file.ownerIds,
     createdAt: file.createdAt,
     fileTransactionHash: file.fileTransactionHash,
+    encryptedIvBase64: file.encryptedIvBase64,
+    encryptedAesKeys: file.encryptedAesKeys,
+    senderPublicKeyHex: file.senderPublicKeyHex,
+
     ...(file.sharedKey && { sharedKey: file.sharedKey }),
   };
 }

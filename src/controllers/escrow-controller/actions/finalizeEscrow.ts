@@ -43,25 +43,34 @@ export default async function finalizeEscrow(
   next: NextFunction
 ) {
   try {
-    const { escrowId, dealType, orderContractId } = req.body;
+    const {
+      escrowId,
+      dealType,
+      orderContractId,
 
-    const fileData = req.body.files?.[0];
-    const fileOriginalName = fileData?.fileOriginalName;
-    const fileMimeType = fileData?.fileMimeType;
-    const fileContractId = fileData?.fileContractId;
-    const fileSharedKey = fileData?.fileSharedKey;
+      fileEncryptedIvBase64,
+      fileEncryptedAesKeys: fileEncryptedAesKeysField,
+      fileSenderPublicKeyHex,
+      fileOriginalName,
+      fileMimeType,
+      fileContractId,
+    } = req.body;
+
+    const fileEncryptedAesKeys =
+      fileEncryptedAesKeysField && JSON.parse(fileEncryptedAesKeysField);
 
     const payload = {
       escrowId,
       dealType,
       orderContractId,
 
+      ...(fileEncryptedIvBase64 && { fileEncryptedIvBase64 }),
+      ...(fileEncryptedAesKeys && { fileEncryptedAesKeys }),
+      ...(fileSenderPublicKeyHex && { fileSenderPublicKeyHex }),
       ...(fileOriginalName && { fileOriginalName }),
       ...(fileMimeType && { fileMimeType }),
       ...(fileContractId && { fileContractId }),
-      ...(fileSharedKey && { fileSharedKey }),
     };
-
     await escrowFinalizeSchema.validate(payload);
 
     const escrow = await getEscrowById(escrowId);
@@ -83,10 +92,11 @@ export default async function finalizeEscrow(
         dealType === ESCROW_DEALS.funds_to_file ||
         dealType === ESCROW_DEALS.file_to_file
       ) {
-        const files = req.files as Express.Multer.File[];
-        const file = files[0] as Express.Multer.File;
+        const encryptedFile = req.file
+          ? (req.file as Express.Multer.File)
+          : undefined;
 
-        return file;
+        return encryptedFile;
       }
     })();
 
@@ -142,8 +152,11 @@ export default async function finalizeEscrow(
           fileMimeType,
           fileOriginalName,
           fileContractId,
-          sharedKey: fileSharedKey,
           fileStatus: ESCROW_FILE_STATUSES.sold,
+
+          encryptedIvBase64: fileEncryptedIvBase64,
+          encryptedAesKeys: fileEncryptedAesKeys,
+          senderPublicKeyHex: fileSenderPublicKeyHex,
         });
 
         await finalizeCurrencyFile(orderContractId);
@@ -191,8 +204,11 @@ export default async function finalizeEscrow(
           fileMimeType,
           fileOriginalName,
           fileContractId,
-          sharedKey: fileSharedKey,
           fileStatus: ESCROW_FILE_STATUSES.sold,
+
+          encryptedIvBase64: fileEncryptedIvBase64,
+          encryptedAesKeys: fileEncryptedAesKeys,
+          senderPublicKeyHex: fileSenderPublicKeyHex,
         });
 
         // Send file from owner to counterparty

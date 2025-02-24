@@ -6,5 +6,7 @@ export type User = {
   boxIds: string[];
   escrowIds: string[];
   signature: string;
+  customPubKey?: string;
+  customPrivKey?: string;
   createdAt: Timestamp;
 };

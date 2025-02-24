@@ -9,7 +9,7 @@ export const whitelist = [
   "https://dapp.rsntr.io",
   "https://resonator-front-eqw9lhkij-vvmd.vercel.app",
   "https://resonator-front-end.vercel.app",
-  // "http://localhost:3000",
+  ...(isProduction ? [] : ["http://localhost:3000"]),
 ];
 
 const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
@@ -38,7 +38,6 @@ export const authCookieOptions = {
   path: "/", // Ensure it's available on all paths
 };
 
-export const MAX_FILES = 10;
 export const MAX_USER_STORAGE_SIZE = 1000 * 1024 * 1024;
 export const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024;
 
