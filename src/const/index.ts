@@ -9,7 +9,7 @@ export const whitelist = [
   "https://dapp.rsntr.io",
   "https://resonator-front-eqw9lhkij-vvmd.vercel.app",
   "https://resonator-front-end.vercel.app",
-  "http://localhost:3000",
+  ...(isProduction ? [] : ["http://localhost:3000"]),
 ];
 
 const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
