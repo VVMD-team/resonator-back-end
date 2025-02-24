@@ -81,16 +81,18 @@ export default async function shareFileToAnotherUser({
     newIpfsHash = IpfsHash;
   }
 
+  const updatedFields = {
+    ...(newIpfsHash && { ipfsHash: newIpfsHash }),
+    ...(encryptedIvBase64 && { encryptedIvBase64 }),
+    ...(encryptedAesKeys && { encryptedAesKeys }),
+    ...(senderPublicKeyHex && { senderPublicKeyHex }),
+    ownerIds: [...existedFile.ownerIds, sharedUserData.id],
+  };
+
   await db
     .collection(COLLECTIONS.files)
     .doc(existedFile.id)
-    .update({
-      ...(newIpfsHash && { ipfsHash: newIpfsHash }),
-      ...(encryptedIvBase64 && { encryptedIvBase64 }),
-      ...(encryptedAesKeys && { encryptedAesKeys }),
-      ...(senderPublicKeyHex && { senderPublicKeyHex }),
-      ownerIds: [...existedFile.ownerIds, sharedUserData.id],
-    });
+    .update(updatedFields);
 
   await db
     .collection(COLLECTIONS.boxes)
@@ -98,4 +100,9 @@ export default async function shareFileToAnotherUser({
     .update({ fileIds: [...sharedBoxFileIds, existedFile.id] });
 
   await updateBoxSize(sharedBoxId);
+
+  return {
+    ...existedFile,
+    ...updatedFields,
+  };
 }
