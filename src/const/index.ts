@@ -9,6 +9,7 @@ export const whitelist = [
   "https://dapp.rsntr.io",
   "https://resonator-front-end.vercel.app",
   "https://fragma.vercel.app",
+  "https://dapp.frgm.io",
   ...(isProduction ? [] : ["http://localhost:3000"]),
 ];
 
