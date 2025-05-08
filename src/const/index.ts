@@ -5,7 +5,7 @@ export const isProduction = enviroment === "production";
 export const PORT = process.env.PORT;
 export const whitelist = [
   "https://escrow.rsntr.io",
-  "https://resonator.ngrok.io",
+  "https://dapp-backend.ngrok.io",
   "https://dapp.rsntr.io",
   "https://resonator-front-end.vercel.app",
   "https://fragma.vercel.app",
