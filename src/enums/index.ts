@@ -44,6 +44,7 @@ enum ProdCurrencies {
   ALVA = "ALVA",
   QF = "QF",
   SYNK = "SYNK",
+  FRAGMA = "FRAGMA",
 }
 enum DevCurrencies {
   ETH = "ETH",
