@@ -49,7 +49,7 @@ export const startHttpServer = () => {
   app.use(cookieParser());
 
   app.get("/", (req: Request, res: Response) => {
-    res.send("Dapp Resonator Back End");
+    res.send("Dapp Back End");
   });
 
   app.use(router);

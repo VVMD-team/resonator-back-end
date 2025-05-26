@@ -70,6 +70,8 @@ export const startWSServer = (server: Server) => {
   return wss;
 };
 
+export const getUserConnectionsMap = () => userConnections;
+
 type SendMessageToUserData = {
   userId: string;
   message: string;

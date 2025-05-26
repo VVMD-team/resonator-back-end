@@ -6,6 +6,8 @@ export enum COLLECTIONS {
   files = "files",
   escrows = "escrows",
   notifications = "notifications",
+  conversations = "conversations",
+  messages = "messages",
 }
 
 export enum WALLETS {
@@ -44,6 +46,7 @@ enum ProdCurrencies {
   ALVA = "ALVA",
   QF = "QF",
   SYNK = "SYNK",
+  FRAGMA = "FRAGMA",
 }
 enum DevCurrencies {
   ETH = "ETH",
