@@ -6,6 +6,8 @@ export enum COLLECTIONS {
   files = "files",
   escrows = "escrows",
   notifications = "notifications",
+  conversations = "conversations",
+  messages = "messages",
 }
 
 export enum WALLETS {
