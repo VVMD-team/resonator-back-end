@@ -1,4 +1,6 @@
 export { default as authSchema } from "./authSchema";
+export { default as createConversationShema } from "./createConversationShema";
+export { default as createMessageSchema } from "./createMessageSchema";
 export { default as customKeyPairSchema } from "./customKeyPairSchema";
 export { default as escrowCheckValiditySchema } from "./escrowCheckValiditySchema";
 export { default as escrowCreateSchema } from "./escrowCreate";

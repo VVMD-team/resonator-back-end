@@ -45,3 +45,5 @@ export const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024;
 export const ESCROW_SECONDS_TILL_EXPIRATION = 7 * 24 * 60 * 60; // 7 days
 
 export const authMessage = process.env.AUTH_SIGNATURE_MESSAGE as string;
+
+export const MAX_MESSAGE_TEXT_LENGTH = 4096;

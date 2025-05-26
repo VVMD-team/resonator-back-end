@@ -6,6 +6,7 @@ import * as UserController from "controllers/user-controller";
 import * as BoxesController from "controllers/boxes-controller";
 import * as EscrowController from "controllers/escrow-controller";
 import * as NotificationController from "controllers/notification-controller";
+import * as ChatController from "controllers/chat-controller";
 
 import verifyToken from "middleware/verifyToken";
 import asyncHandler from "utils/asyncHandler";
@@ -231,6 +232,47 @@ router.get(
   "/notifications",
   asyncHandler(verifyToken),
   asyncHandler(NotificationController.getNotifications)
+);
+
+// =====================================================================
+// Chat
+
+const chatEndpoint = "/chat";
+
+// Conversations
+const conversationsEndpoint = `${chatEndpoint}/conversations`;
+
+router.post(
+  `${conversationsEndpoint}/create`,
+  asyncHandler(verifyToken),
+  asyncHandler(ChatController.createConversation)
+);
+
+router.get(
+  `${conversationsEndpoint}/all`,
+  asyncHandler(verifyToken),
+  asyncHandler(ChatController.getConversations)
+);
+
+router.get(
+  `${conversationsEndpoint}/single`,
+  asyncHandler(verifyToken),
+  asyncHandler(ChatController.getConversationByID)
+);
+
+// Messages
+const messagesEndpoint = `${chatEndpoint}/messages`;
+
+router.post(
+  `${messagesEndpoint}/create`,
+  asyncHandler(verifyToken),
+  asyncHandler(ChatController.createMessage)
+);
+
+router.get(
+  `${messagesEndpoint}/all`,
+  asyncHandler(verifyToken),
+  asyncHandler(ChatController.getMessages)
 );
 
 export default router;
