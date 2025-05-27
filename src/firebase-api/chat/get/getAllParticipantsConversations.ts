@@ -4,30 +4,63 @@ import { COLLECTIONS } from "enums";
 
 import { ParticipantID } from "custom-types/chat";
 
-export default async function getAllParticipantsConversations(
-  participantId: ParticipantID
-): Promise<Conversation[]> {
+type SearchParams = {
+  keyword: string;
+};
+
+type Params = {
+  participantId: ParticipantID;
+  searchParams?: SearchParams;
+};
+
+export default async function getAllParticipantsConversations({
+  participantId,
+  searchParams,
+}: Params): Promise<Conversation[]> {
   try {
     const snapshot = await db
       .collection(COLLECTIONS.conversations)
       .where("participantIds", "array-contains", participantId)
       .get();
 
+    if (searchParams?.keyword) {
+      const conversationsFiltered = snapshot.docs.reduce(
+        (acc: Conversation[], doc) => {
+          const data = doc.data() as Conversation;
+
+          if (
+            data.title &&
+            data.title
+              .toLowerCase()
+              .includes(searchParams.keyword.toLowerCase())
+          ) {
+            return [...acc, { ...data, id: doc.id as ConversationID }];
+          }
+
+          const participantIdsForSearch = data.participantIds.filter(
+            (id) => id !== participantId
+          );
+
+          const matched = participantIdsForSearch.some((id) =>
+            id.toLowerCase().includes(searchParams.keyword.toLowerCase())
+          );
+
+          if (matched) {
+            return [...acc, { ...data, id: doc.id as ConversationID }];
+          }
+
+          return acc;
+        },
+        []
+      );
+
+      return conversationsFiltered;
+    }
+
     const conversations = snapshot.docs.map((doc) => {
       const data = doc.data() as Conversation;
 
-      const conversation: Conversation = {
-        id: doc.id as ConversationID,
-        title: data.title,
-        creatorId: data.creatorId,
-        participantIds: data.participantIds,
-        lastMessageAt: data.lastMessageAt ?? undefined,
-        deleteAt: data.deleteAt ?? null,
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt,
-      };
-
-      return conversation;
+      return { ...data, id: doc.id as ConversationID };
     });
 
     return conversations;

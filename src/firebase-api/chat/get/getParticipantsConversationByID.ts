@@ -21,22 +21,11 @@ export default async function getParticipantsConversationByID({
 
     const data = docSnap.data() as Conversation;
 
-    const conversation: Conversation = {
-      id: docSnap.id as ConversationID,
-      title: data.title,
-      creatorId: data.creatorId,
-      participantIds: data.participantIds,
-      lastMessageAt: data.lastMessageAt ?? undefined,
-      deleteAt: data.deleteAt ?? null,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    };
-
-    if (!conversation.participantIds.includes(participantId)) {
+    if (!data.participantIds.includes(participantId)) {
       throw new Error(`Conversation with ID "${conversationId}" not found`);
     }
 
-    return conversation;
+    return { ...data, id: docSnap.id as ConversationID };
   } catch (error) {
     throw new Error(
       `Something went wrong while fetching conversation ${conversationId}: ${error}`

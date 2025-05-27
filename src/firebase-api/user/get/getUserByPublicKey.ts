@@ -2,7 +2,9 @@ import { db } from "config/firebase";
 import { COLLECTIONS } from "enums";
 import { User } from "custom-types/User";
 
-export default async function getUserByPublicKey(publicKey: string) {
+export default async function getUserByPublicKey(
+  publicKey: string
+): Promise<User & { id: string }> {
   try {
     const userQuery = await db
       .collection(COLLECTIONS.users)
@@ -15,8 +17,8 @@ export default async function getUserByPublicKey(publicKey: string) {
     }
 
     const userDoc = userQuery.docs[0];
-    const user = userDoc.data();
-    return { ...user, id: userDoc.id } as User & { id: string };
+    const user = userDoc.data() as User;
+    return { ...user, id: userDoc.id };
   } catch (error) {
     throw new Error(`${error}`);
   }

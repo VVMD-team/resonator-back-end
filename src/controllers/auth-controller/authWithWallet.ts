@@ -7,7 +7,11 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
 import { verifySignature } from "utils/crypto";
 
-import { createUser, getUserByPublicKey } from "firebase-api/user";
+import {
+  createUser,
+  getUserByPublicKey,
+  updateUserLastConnected,
+} from "firebase-api/user";
 
 import { createDefaultBoxes } from "firebase-api/box";
 
@@ -62,6 +66,11 @@ export default async function authWithWallet(
 
       await signInWithCustomToken(auth, customToken);
 
+      await updateUserLastConnected({
+        userId: user.id,
+        lastConnectedAt: FieldValue.serverTimestamp() as Timestamp,
+      });
+
       return res.status(200).send({ user, authorization: customToken });
     } else {
       const newUserData = {
@@ -73,6 +82,7 @@ export default async function authWithWallet(
         escrowIds: [],
         signature,
         createdAt: FieldValue.serverTimestamp() as Timestamp,
+        lastConnectedAt: FieldValue.serverTimestamp() as Timestamp,
       };
 
       const newUser = await createUser(newUserData, walletPublicKeyInLowerCase);

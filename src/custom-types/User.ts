@@ -9,4 +9,5 @@ export type User = {
   customPubKey?: string;
   customPrivKey?: string;
   createdAt: Timestamp;
+  lastConnectedAt: Timestamp;
 };

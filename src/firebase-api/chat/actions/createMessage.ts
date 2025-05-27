@@ -10,6 +10,8 @@ import {
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { COLLECTIONS } from "enums";
 
+import updateConversationLastMessageData from "./updateConversationLastMessageData";
+
 type CreateMessageData = {
   conversationId: ConversationID;
   senderWalletAddress: string;
@@ -21,17 +23,6 @@ export default async function createMessage(
 ): Promise<Message> {
   try {
     const senderWalletAddress = data.senderWalletAddress as ParticipantID;
-
-    const conversationDocSnap = await db
-      .collection(COLLECTIONS.conversations)
-      .doc(data.conversationId)
-      .get();
-
-    if (!conversationDocSnap.exists) {
-      throw new Error(
-        `Conversation with ID "${data.conversationId}" not found`
-      );
-    }
 
     const newMessage = {
       conversationId: data.conversationId,
@@ -46,10 +37,15 @@ export default async function createMessage(
     const docRef = await db.collection(COLLECTIONS.messages).add(newMessage);
 
     const newMessageData = (await docRef.get()).data() as Message;
+    // console.log({ newMessageData });
+    // console.log(data.conversationId);
+    await updateConversationLastMessageData({
+      conversationId: data.conversationId,
+      lastMessageAt: newMessageData.createdAt,
+      lastMessageText: newMessageData.content,
+    });
 
-    const messageId = docRef.id;
-
-    return { ...newMessageData, id: messageId };
+    return { ...newMessageData, id: docRef.id };
   } catch (error) {
     throw new Error(
       `Something went wrong with creating message. Error: ${error}`

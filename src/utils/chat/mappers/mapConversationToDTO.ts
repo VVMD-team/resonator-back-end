@@ -5,16 +5,18 @@ export default function mapConversationToDTO(
   conversation: Conversation,
   currentParticipantId: ParticipantID
 ) {
-  const correspondentAddress =
-    conversation.title ||
-    conversation.participantIds
-      .filter((participantId) => participantId !== currentParticipantId)
-      .join(", ");
+  const correspondentAddress = conversation.participantIds
+    .filter((participantId) => participantId !== currentParticipantId)
+    .join(", ");
+
+  const title = conversation.title || correspondentAddress;
 
   return {
     id: conversation.id,
-    title: correspondentAddress,
+    title,
     correspondentAddress,
+    lastMessageAt: conversation.lastMessageAt,
+    lastMessageText: conversation.lastMessageText,
     updatedAt: conversation.updatedAt,
   };
 }

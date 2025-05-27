@@ -30,6 +30,7 @@ export type Conversation = ConversationShort & {
   participantIds: ParticipantID[];
 
   lastMessageAt?: Timestamp;
+  lastMessageText?: string;
   deleteAt: Timestamp | null;
 
   createdAt: Timestamp;
