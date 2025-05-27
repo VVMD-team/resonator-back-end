@@ -77,3 +77,9 @@ export enum ESCROW_FILE_STATUSES {
 export enum NOTIFICATION_TYPES {
   escrow = "escrow",
 }
+
+export enum WS_DATA_TYPES {
+  message = "message",
+  conversation = "conversation",
+  escrow_notification = "escrow_notification",
+}

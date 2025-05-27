@@ -48,20 +48,28 @@ router.post(
 );
 // =====================================================================
 // User
+const userEndpoint = "/user";
+
 router.get(
-  "/user",
+  userEndpoint,
   asyncHandler(verifyToken),
   asyncHandler(UserController.getUserData)
 );
 
 router.get(
-  "/user/custom-pub-key",
+  `${userEndpoint}/custom-pub-key`,
   asyncHandler(verifyToken),
   asyncHandler(UserController.getUserCustomPubKey)
 );
 
+router.get(
+  `${userEndpoint}/last-connected`,
+  asyncHandler(verifyToken),
+  asyncHandler(UserController.getUserLastConnected)
+);
+
 router.post(
-  "/user/add-custom-key-pair",
+  `${userEndpoint}/add-custom-key-pair`,
   asyncHandler(verifyToken),
   asyncHandler(UserController.addCustomKeyPair)
 );

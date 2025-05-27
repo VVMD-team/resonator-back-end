@@ -13,9 +13,13 @@ export default async function getConversations(
   next: NextFunction
 ) {
   try {
+    const { keyword } = req.query as { keyword?: string };
     const participantId = req.userId as ParticipantID;
 
-    const conversations = await getAllParticipantsConversations(participantId);
+    const conversations = await getAllParticipantsConversations({
+      participantId,
+      ...(keyword && { searchParams: { keyword } }),
+    });
 
     const conversationsDTO = conversations.map((conversation) =>
       mapConversationToDTO(conversation, participantId)

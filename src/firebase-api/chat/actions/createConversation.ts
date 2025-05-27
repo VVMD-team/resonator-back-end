@@ -11,30 +11,46 @@ type CreateConversationData = {
   participantId: ParticipantID;
 };
 
-export default async function createConversation(
-  data: CreateConversationData
-): Promise<Conversation> {
-  try {
-    const currentTimestamp = FieldValue.serverTimestamp() as Timestamp;
+export default async function createConversation({
+  title,
+  creatorId,
+  participantId,
+}: CreateConversationData): Promise<Conversation> {
+  const snapshot = await db
+    .collection(COLLECTIONS.conversations)
+    .where("participantIds", "array-contains", creatorId)
+    .get();
 
-    const newConversation = {
-      title: data.title || "",
-      creatorId: data.creatorId,
-      participantIds: [data.creatorId, data.participantId],
+  const isAlreadyCreacted = !!snapshot.docs.find((doc) => {
+    const data = doc.data() as Conversation;
+    console.log(data);
 
-      deleteAt: null,
-      createdAt: currentTimestamp,
-      updatedAt: currentTimestamp,
-    };
+    return data.participantIds.includes(participantId);
+  });
 
-    const docRef = await db
-      .collection(COLLECTIONS.conversations)
-      .add(newConversation);
-
-    const conversationId = docRef.id as ConversationID;
-
-    return { id: conversationId, ...newConversation };
-  } catch (error) {
-    throw new Error(`Something went wrong with creating chat. Error: ${error}`);
+  if (isAlreadyCreacted) {
+    throw new Error(`You already have conversation with this user`);
   }
+
+  const currentTimestamp = FieldValue.serverTimestamp() as Timestamp;
+
+  const newConversation = {
+    title: title || participantId,
+    creatorId: creatorId,
+    participantIds: [creatorId, participantId],
+
+    deleteAt: null,
+    createdAt: currentTimestamp,
+    updatedAt: currentTimestamp,
+  };
+
+  const docRef = await db
+    .collection(COLLECTIONS.conversations)
+    .add(newConversation);
+
+  const newConversationData = (await docRef.get()).data() as Conversation;
+
+  const conversationId = docRef.id as ConversationID;
+
+  return { ...newConversationData, id: conversationId };
 }

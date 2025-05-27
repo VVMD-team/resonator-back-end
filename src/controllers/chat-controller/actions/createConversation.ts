@@ -10,6 +10,8 @@ import { createConversationShema } from "schemas";
 import { ValidationError } from "yup";
 import formatYupError from "helpers/yup/formatYupError";
 
+import sendConversationToParticipant from "utils/chat/sendConversationToParticipant";
+
 export default async function createConversation(
   req: AuthRequest,
   res: Response,
@@ -39,6 +41,8 @@ export default async function createConversation(
       creatorId: creatorWalletAddressLowerCase as ParticipantID,
       participantId: participantWalletAddressLowerCase as ParticipantID,
     });
+
+    sendConversationToParticipant(conversation, participantWalletAddress);
 
     return res.status(200).send(conversation);
   } catch (error) {

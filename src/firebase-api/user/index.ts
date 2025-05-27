@@ -7,3 +7,4 @@ export { default as createUser } from "./actions/createUser";
 export { default as deleteBoxIdFromUser } from "./actions/deleteBoxIdFromUser";
 export { default as setBoxToUser } from "./actions/setBoxToUser";
 export { default as setEscrowToUser } from "./actions/setEscrowToUser";
+export { default as updateUserLastConnected } from "./actions/updateUserLastConnected";
