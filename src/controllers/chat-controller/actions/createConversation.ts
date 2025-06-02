@@ -42,7 +42,10 @@ export default async function createConversation(
       participantId: participantWalletAddressLowerCase as ParticipantID,
     });
 
-    sendConversationToParticipant(conversation, participantWalletAddress);
+    sendConversationToParticipant(
+      conversation,
+      participantWalletAddressLowerCase
+    );
 
     return res.status(200).send(conversation);
   } catch (error) {
