@@ -1,11 +1,6 @@
 import { db } from "config/firebase";
 
-import {
-  Message,
-  ParticipantID,
-  MessageType,
-  ConversationID,
-} from "custom-types/chat";
+import { Message, MessageType, ConversationID } from "custom-types/chat";
 
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { COLLECTIONS } from "enums";
@@ -16,39 +11,33 @@ type CreateMessageData = {
   conversationId: ConversationID;
   senderWalletAddress: string;
   content: string;
+  messageType?: MessageType;
 };
 
-export default async function createMessage(
-  data: CreateMessageData
-): Promise<Message> {
-  try {
-    const senderWalletAddress = data.senderWalletAddress as ParticipantID;
+export default async function createMessage({
+  conversationId,
+  senderWalletAddress,
+  content,
+  messageType = MessageType.TEXT,
+}: CreateMessageData): Promise<Message> {
+  const newMessage = {
+    conversationId: conversationId,
+    senderWalletAddress,
+    content: content,
 
-    const newMessage = {
-      conversationId: data.conversationId,
-      senderWalletAddress,
-      content: data.content,
-      readBy: [senderWalletAddress],
+    type: messageType,
+    createdAt: FieldValue.serverTimestamp() as Timestamp,
+  };
 
-      type: MessageType.TEXT,
-      createdAt: FieldValue.serverTimestamp() as Timestamp,
-    };
+  const docRef = await db.collection(COLLECTIONS.messages).add(newMessage);
 
-    const docRef = await db.collection(COLLECTIONS.messages).add(newMessage);
+  const newMessageData = (await docRef.get()).data() as Message;
 
-    const newMessageData = (await docRef.get()).data() as Message;
-    // console.log({ newMessageData });
-    // console.log(data.conversationId);
-    await updateConversationLastMessageData({
-      conversationId: data.conversationId,
-      lastMessageAt: newMessageData.createdAt,
-      lastMessageText: newMessageData.content,
-    });
+  await updateConversationLastMessageData({
+    conversationId: conversationId,
+    lastMessageAt: newMessageData.createdAt,
+    lastMessageText: newMessageData.content,
+  });
 
-    return { ...newMessageData, id: docRef.id };
-  } catch (error) {
-    throw new Error(
-      `Something went wrong with creating message. Error: ${error}`
-    );
-  }
+  return { ...newMessageData, id: docRef.id };
 }

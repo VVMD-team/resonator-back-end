@@ -13,17 +13,9 @@ export default async function getMessages(
       .get();
 
     const messages: Message[] = snapshot.docs.map((doc) => {
-      const data = doc.data();
+      const data = doc.data() as Message;
 
-      return {
-        id: doc.id,
-        conversationId: data.conversationId,
-        senderWalletAddress: data.senderWalletAddress,
-        content: data.content,
-        type: data.type,
-        readBy: data.readBy,
-        createdAt: data.createdAt,
-      };
+      return { ...data, id: doc.id };
     });
 
     return messages;

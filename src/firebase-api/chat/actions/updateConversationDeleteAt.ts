@@ -1,21 +1,21 @@
 import { db } from "config/firebase";
 
+import { UtcTimestamp } from "custom-types/helpers";
 import { ConversationID } from "custom-types/chat";
-import { Timestamp } from "firebase-admin/firestore";
 
 import { COLLECTIONS } from "enums";
 
-type UpdateConversationLastMessageData = {
+import { Timestamp } from "firebase-admin/firestore";
+
+type UpdateConversationDeleteAtData = {
   conversationId: ConversationID;
-  lastMessageAt: Timestamp;
-  lastMessageText: string;
+  timestamp: UtcTimestamp;
 };
 
-export default async function updateConversationLastMessageData({
+export default async function updateConversationDeleteAt({
   conversationId,
-  lastMessageAt,
-  lastMessageText,
-}: UpdateConversationLastMessageData): Promise<void> {
+  timestamp,
+}: UpdateConversationDeleteAtData) {
   const docRef = db.collection(COLLECTIONS.conversations).doc(conversationId);
   const docSnap = await docRef.get();
 
@@ -23,8 +23,5 @@ export default async function updateConversationLastMessageData({
     throw new Error(`Conversation with ID "${conversationId}" not found`);
   }
 
-  await docRef.update({
-    lastMessageAt,
-    lastMessageText,
-  });
+  await docRef.update({ deleteAt: Timestamp.fromMillis(timestamp) });
 }

@@ -21,14 +21,13 @@ export default async function createConversation({
     .where("participantIds", "array-contains", creatorId)
     .get();
 
-  const isAlreadyCreacted = !!snapshot.docs.find((doc) => {
+  const isAlreadyCreated = !!snapshot.docs.find((doc) => {
     const data = doc.data() as Conversation;
-    console.log(data);
 
     return data.participantIds.includes(participantId);
   });
 
-  if (isAlreadyCreacted) {
+  if (isAlreadyCreated) {
     throw new Error(`You already have conversation with this user`);
   }
 

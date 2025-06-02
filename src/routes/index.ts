@@ -247,6 +247,24 @@ router.get(
 
 const chatEndpoint = "/chat";
 
+router.post(
+  `${chatEndpoint}/delegate`,
+  asyncHandler(verifyToken),
+  asyncHandler(ChatController.delegateChat)
+);
+
+router.delete(
+  chatEndpoint,
+  asyncHandler(verifyToken),
+  asyncHandler(ChatController.deleteChat)
+);
+
+router.delete(
+  `${chatEndpoint}/schedule-delete`,
+  asyncHandler(verifyToken),
+  asyncHandler(ChatController.scheduleDeleteChat)
+);
+
 // Conversations
 const conversationsEndpoint = `${chatEndpoint}/conversations`;
 

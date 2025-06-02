@@ -17,6 +17,7 @@ export default function mapConversationToDTO(
     correspondentAddress,
     lastMessageAt: conversation.lastMessageAt,
     lastMessageText: conversation.lastMessageText,
+    deleteAt: conversation.deleteAt,
     updatedAt: conversation.updatedAt,
   };
 }

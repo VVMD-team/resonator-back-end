@@ -6,6 +6,10 @@ import { shareTransferFileSchema } from "schemas";
 import { ValidationError } from "yup";
 import formatYupError from "helpers/yup/formatYupError";
 
+import { createMessage } from "firebase-api/chat";
+import { MessageType, ConversationID } from "custom-types/chat";
+import sendChatMessageToParticipant from "utils/chat/sendChatMessageToParticipant";
+
 export default async function transferFile(
   req: AuthRequest,
   res: Response,
@@ -26,6 +30,8 @@ export default async function transferFile(
       encryptedIvBase64,
       encryptedAesKeys: encryptedAesKeysField,
       senderPublicKeyHex,
+
+      conversationId,
     } = req.body;
 
     let encryptedAesKeys;
@@ -41,6 +47,8 @@ export default async function transferFile(
       encryptedIvBase64,
       encryptedAesKeys,
       senderPublicKeyHex,
+
+      conversationId,
     };
     await shareTransferFileSchema.validate(payload);
 
@@ -67,6 +75,22 @@ export default async function transferFile(
       encryptedAesKeys,
       senderPublicKeyHex,
     });
+
+    if (conversationId) {
+      const message = await createMessage({
+        conversationId: conversationId as ConversationID,
+        senderWalletAddress: userId,
+        content: "File successfully transfered.",
+        messageType: MessageType.SYSTEM,
+      });
+
+      sendChatMessageToParticipant(
+        message,
+        recipientWalletPublicKeyInLowerCase
+      );
+
+      return res.status(200).send({ message, result: true });
+    }
 
     return res.status(200).send({ result: true });
   } catch (error) {

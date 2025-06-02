@@ -4,3 +4,5 @@ export type AtLeastOne<T> = {
   Partial<T>;
 
 export type Base64String = string & { readonly __brand: unique symbol };
+
+export type UtcTimestamp = number;

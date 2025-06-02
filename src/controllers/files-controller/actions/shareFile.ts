@@ -8,6 +8,10 @@ import formatYupError from "helpers/yup/formatYupError";
 
 import { mapFileToDTO } from "utils/file/mappers";
 
+import { createMessage } from "firebase-api/chat";
+import { MessageType, ConversationID } from "custom-types/chat";
+import sendChatMessageToParticipant from "utils/chat/sendChatMessageToParticipant";
+
 export default async function shareFile(
   req: AuthRequest,
   res: Response,
@@ -28,6 +32,7 @@ export default async function shareFile(
       encryptedIvBase64,
       encryptedAesKeys: encryptedAesKeysField,
       senderPublicKeyHex,
+      conversationId,
     } = req.body;
 
     let encryptedAesKeys;
@@ -43,6 +48,8 @@ export default async function shareFile(
       encryptedIvBase64,
       encryptedAesKeys,
       senderPublicKeyHex,
+
+      conversationId,
     };
     await shareTransferFileSchema.validate(payload);
 
@@ -70,6 +77,24 @@ export default async function shareFile(
     });
 
     const sharedFileDTO = mapFileToDTO(sharedFile);
+
+    if (conversationId) {
+      const message = await createMessage({
+        conversationId: conversationId as ConversationID,
+        senderWalletAddress: userId,
+        content: "File successfully shared.",
+        messageType: MessageType.SYSTEM,
+      });
+
+      sendChatMessageToParticipant(
+        message,
+        recipientWalletPublicKeyInLowerCase
+      );
+
+      return res
+        .status(200)
+        .send({ message, sharedFile: sharedFileDTO, result: true });
+    }
 
     return res.status(200).send({ sharedFile: sharedFileDTO, result: true });
   } catch (error) {

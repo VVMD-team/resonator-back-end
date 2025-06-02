@@ -5,6 +5,7 @@ export type ParticipantID = string & { __brand: "ParticipantID" };
 
 export enum MessageType {
   TEXT = "TEXT",
+  SYSTEM = "SYSTEM",
 }
 
 export type Message = {
@@ -13,8 +14,6 @@ export type Message = {
   type: MessageType;
   senderWalletAddress: string; // user's id
   content: string;
-
-  readBy: ParticipantID[];
 
   createdAt: Timestamp;
 };

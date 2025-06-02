@@ -22,7 +22,9 @@ export default async function getParticipantsConversationByID({
     const data = docSnap.data() as Conversation;
 
     if (!data.participantIds.includes(participantId)) {
-      throw new Error(`Conversation with ID "${conversationId}" not found`);
+      throw new Error(
+        `User "${participantId}" is not a participant in conversation "${conversationId}"`
+      );
     }
 
     return { ...data, id: docSnap.id as ConversationID };
