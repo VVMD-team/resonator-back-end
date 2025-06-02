@@ -82,7 +82,7 @@ export default async function shareFile(
       const message = await createMessage({
         conversationId: conversationId as ConversationID,
         senderWalletAddress: userId,
-        content: "File successfully shared.",
+        content: `File ${sharedFile.name} has been shared`,
         messageType: MessageType.SYSTEM,
       });
 

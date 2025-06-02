@@ -10,6 +10,7 @@ import { ValidationError } from "yup";
 import formatYupError from "helpers/yup/formatYupError";
 
 import sendConversationToParticipant from "utils/chat/sendConversationToParticipant";
+import { getUserByPublicKey } from "firebase-api/user";
 
 export default async function delegateChat(
   req: AuthRequest,
@@ -31,6 +32,8 @@ export default async function delegateChat(
         .status(400)
         .json({ message: "You can not delegate to yourself" });
     }
+
+    await getUserByPublicKey(delegateeIdLowerCase);
 
     const { delegatedConversation } = await delegateChatInDB({
       delegatorId: userId,

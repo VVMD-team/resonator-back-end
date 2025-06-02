@@ -12,6 +12,8 @@ import formatYupError from "helpers/yup/formatYupError";
 
 import sendConversationToParticipant from "utils/chat/sendConversationToParticipant";
 
+import { mapConversationToDTO } from "utils/chat/mappers";
+
 export default async function createConversation(
   req: AuthRequest,
   res: Response,
@@ -24,10 +26,10 @@ export default async function createConversation(
     await createConversationShema.validate(payload);
 
     const participantWalletAddressLowerCase =
-      participantWalletAddress.toLowerCase();
+      participantWalletAddress.toLowerCase() as ParticipantID;
 
     const userId = req.userId as string;
-    const creatorWalletAddressLowerCase = userId.toLowerCase();
+    const creatorWalletAddressLowerCase = userId.toLowerCase() as ParticipantID;
 
     if (participantWalletAddressLowerCase === creatorWalletAddressLowerCase) {
       return res.status(400).send({
@@ -38,8 +40,8 @@ export default async function createConversation(
     await getUserByPublicKey(participantWalletAddressLowerCase);
 
     const conversation = await createConversationInDB({
-      creatorId: creatorWalletAddressLowerCase as ParticipantID,
-      participantId: participantWalletAddressLowerCase as ParticipantID,
+      creatorId: creatorWalletAddressLowerCase,
+      participantId: participantWalletAddressLowerCase,
     });
 
     sendConversationToParticipant(
@@ -47,7 +49,12 @@ export default async function createConversation(
       participantWalletAddressLowerCase
     );
 
-    return res.status(200).send(conversation);
+    const conversationDTO = mapConversationToDTO(
+      conversation,
+      creatorWalletAddressLowerCase
+    );
+
+    return res.status(200).send(conversationDTO);
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(formatYupError(error));

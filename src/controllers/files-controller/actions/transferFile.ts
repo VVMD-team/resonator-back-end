@@ -66,7 +66,7 @@ export default async function transferFile(
       .trim()
       .toLowerCase();
 
-    await transferFileToAnotherUser({
+    const transferedFile = await transferFileToAnotherUser({
       senderUserId: userId,
       recipientWalletPublicKey: recipientWalletPublicKeyInLowerCase,
       fileId,
@@ -80,7 +80,7 @@ export default async function transferFile(
       const message = await createMessage({
         conversationId: conversationId as ConversationID,
         senderWalletAddress: userId,
-        content: "File successfully transfered.",
+        content: `File ${transferedFile.name} has been transfered`,
         messageType: MessageType.SYSTEM,
       });
 

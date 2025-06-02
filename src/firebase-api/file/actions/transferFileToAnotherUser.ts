@@ -138,4 +138,6 @@ export default async function transferFileToAnotherUser({
     .update({ fileIds: [...transferedFileIds, existedFile.id] });
 
   await updateBoxSize(transferedBoxId);
+
+  return existedFile;
 }

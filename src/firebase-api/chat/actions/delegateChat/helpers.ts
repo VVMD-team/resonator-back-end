@@ -29,13 +29,11 @@ export async function delegateConversation({
   }
 
   if (!data.participantIds.includes(delegatorId)) {
-    throw new Error(`delegatorId: ${delegatorId} not found in participantIds.`);
+    throw new Error(`delegatorId not found in participantIds.`);
   }
 
   if (data.participantIds.includes(delegateeId)) {
-    throw new Error(
-      `delegateeId: ${delegateeId} already exists in participantIds.`
-    );
+    throw new Error(`This user is already a participant in this chat.`);
   }
 
   const updatedParticipantIds = data.participantIds.map((id) =>
