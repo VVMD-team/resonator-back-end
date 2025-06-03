@@ -56,7 +56,7 @@ const escrowCreateSchema = object().shape({
   contractOrderHash: string().required().label("Contract Order Hash"),
   name: string().required().max(50).label("Name"),
   description: string().required().max(500).label("Description"),
-  counterpartyAddress: string().required().label("Counterparty Adress"),
+  counterpartyAddress: string().required().label("Counterparty Address"),
   dealType: enumsValidator(ESCROW_DEALS).required().label("Deal type"),
 
   fileEncryptedIvBase64: string()

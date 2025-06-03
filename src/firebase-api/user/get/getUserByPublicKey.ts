@@ -13,7 +13,7 @@ export default async function getUserByPublicKey(
 
     if (userQuery.empty) {
       console.error("Can not find user by wallet.publicKey: ", publicKey);
-      throw new Error("User with this wallet adress does not exist");
+      throw new Error("User with this wallet address does not exist");
     }
 
     const userDoc = userQuery.docs[0];
