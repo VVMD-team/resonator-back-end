@@ -7,15 +7,17 @@ import {
 } from "firebase-api/chat";
 
 import { ParticipantID } from "custom-types/chat";
+import { Timestamp } from "firebase-admin/firestore";
 
 import { scheduleDeleteChatSchema } from "schemas";
 import { ValidationError } from "yup";
 import formatYupError from "helpers/yup/formatYupError";
 
-import { scheduleTimeout } from "timeoutManager";
+import { scheduleTimeout } from "utils/timeoutManager";
 import { UtcTimestamp } from "custom-types/helpers";
 
 import sendDeleteConversationIdToParticipant from "utils/chat/sendDeleteConversationIdToParticipant";
+import sendUpdateConversationToParticipant from "utils/chat/sendUpdateConversationToParticipant";
 
 export default async function scheduleDeleteChat(
   req: AuthRequest,
@@ -30,10 +32,23 @@ export default async function scheduleDeleteChat(
 
     const userId = req.userId as ParticipantID;
 
-    await updateConversationDeleteAt({
-      conversationId,
-      timestamp: timestamp as UtcTimestamp,
-    });
+    const { participantIds: updatedConversationParticipantIds } =
+      await updateConversationDeleteAt({
+        conversationId,
+        timestamp: timestamp as UtcTimestamp,
+      });
+
+    await Promise.all(
+      updatedConversationParticipantIds.map(async (participantId) => {
+        await sendUpdateConversationToParticipant(
+          conversationId,
+          {
+            deleteAt: Timestamp.fromMillis(timestamp),
+          },
+          participantId
+        );
+      })
+    );
 
     scheduleTimeout(conversationId, timestamp, async () => {
       const { participantIds: deletedConversationParticipantIds } =

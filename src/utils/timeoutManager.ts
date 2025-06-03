@@ -1,3 +1,5 @@
+const MAX_TIMEOUT = 2_147_483_647; // 32-bit signed int max
+
 const scheduledTimeouts = new Map<string, NodeJS.Timeout>();
 
 export function scheduleTimeout(
@@ -5,21 +7,40 @@ export function scheduleTimeout(
   timestamp: number,
   callback: () => void
 ) {
-  const delay = timestamp - Date.now();
+  cancelScheduledTimeout(id);
 
-  if (delay <= 0) {
+  const remaining = timestamp - Date.now();
+
+  if (remaining <= 0) {
     callback();
     return;
   }
 
-  cancelScheduledTimeout(id);
+  const timeout = setSafeTimeout(id, remaining, callback);
+  scheduledTimeouts.set(id, timeout);
 
-  const timeout = setTimeout(() => {
+  console.log(
+    `Scheduled timeout for ${id} in ${remaining}ms. Timestamp: ${timestamp}`
+  );
+}
+
+function setSafeTimeout(
+  id: string,
+  delay: number,
+  callback: () => void
+): NodeJS.Timeout {
+  if (delay > MAX_TIMEOUT) {
+    return setTimeout(() => {
+      const nextDelay = delay - MAX_TIMEOUT;
+      const nextTimeout = setSafeTimeout(id, nextDelay, callback);
+      scheduledTimeouts.set(id, nextTimeout);
+    }, MAX_TIMEOUT);
+  }
+
+  return setTimeout(() => {
     callback();
     scheduledTimeouts.delete(id);
   }, delay);
-
-  scheduledTimeouts.set(id, timeout);
 }
 
 export function cancelScheduledTimeout(id: string): boolean {

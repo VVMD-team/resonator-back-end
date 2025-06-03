@@ -21,6 +21,7 @@ export default async function getAllParticipantsConversations({
     const snapshot = await db
       .collection(COLLECTIONS.conversations)
       .where("participantIds", "array-contains", participantId)
+      .orderBy("updatedAt", "desc")
       .get();
 
     if (searchParams?.keyword) {

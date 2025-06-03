@@ -83,4 +83,5 @@ export enum WS_DATA_TYPES {
   conversation = "conversation",
   escrow_notification = "escrow_notification",
   delete_conversation = "delete_conversation",
+  update_conversation = "update_conversation",
 }

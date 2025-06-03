@@ -265,6 +265,12 @@ router.delete(
   asyncHandler(ChatController.scheduleDeleteChat)
 );
 
+router.post(
+  `${chatEndpoint}/cancel-schedule-delete`,
+  asyncHandler(verifyToken),
+  asyncHandler(ChatController.cancelScheduledDeleteChat)
+);
+
 // Conversations
 const conversationsEndpoint = `${chatEndpoint}/conversations`;
 
