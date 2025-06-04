@@ -44,7 +44,11 @@ export async function delegateConversation({
 
   return {
     result: true,
-    delegatedConversation: { ...data, id: docSnap.id as ConversationID },
+    delegatedConversation: {
+      ...data,
+      participantIds: updatedParticipantIds,
+      id: docSnap.id as ConversationID,
+    },
   };
 }
 
