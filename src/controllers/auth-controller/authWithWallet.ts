@@ -9,7 +9,7 @@ import { verifySignature } from "utils/crypto";
 
 import {
   createUser,
-  getUserByPublicKey,
+  getUserById,
   updateUserLastConnected,
 } from "firebase-api/user";
 
@@ -49,13 +49,7 @@ export default async function authWithWallet(
       walletType
     );
 
-    let user = null;
-
-    try {
-      user = await getUserByPublicKey(walletPublicKeyInLowerCase);
-    } catch {
-      user = null;
-    }
+    const user = await getUserById(walletPublicKeyInLowerCase);
 
     if (user) {
       if (user.signature !== signature) {

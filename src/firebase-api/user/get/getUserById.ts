@@ -14,6 +14,7 @@ export default async function getUserById(
       return null;
     }
   } catch (error) {
+    console.error("Error getting user by ID:", error);
     throw new Error(`Something went wrong with getting user. Error: ${error}`);
   }
 }
