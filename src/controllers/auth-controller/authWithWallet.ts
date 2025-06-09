@@ -1,4 +1,4 @@
-import { admin, signInWithCustomToken, auth } from "config/firebase";
+import { admin } from "config/firebase";
 
 import { authMessage } from "const";
 import { Request, Response, NextFunction } from "express";
@@ -58,8 +58,6 @@ export default async function authWithWallet(
 
       const customToken = await admin.auth().createCustomToken(user.id);
 
-      await signInWithCustomToken(auth, customToken);
-
       await updateUserLastConnected({
         userId: user.id,
         lastConnectedAt: FieldValue.serverTimestamp() as Timestamp,
@@ -86,8 +84,6 @@ export default async function authWithWallet(
       const customToken = await admin
         .auth()
         .createCustomToken(walletPublicKeyInLowerCase);
-
-      await signInWithCustomToken(auth, customToken);
 
       return res
         .status(200)
