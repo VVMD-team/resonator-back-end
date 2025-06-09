@@ -34,6 +34,8 @@ export default async function authWithWallet(
       walletType,
     };
 
+    console.log({ signature, walletPublicKey });
+
     await authSchema.validate(payload);
 
     if (!authMessage) {
